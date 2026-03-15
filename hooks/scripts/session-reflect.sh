@@ -1,5 +1,19 @@
 #!/bin/bash
-MEMORY_DIR="${SIDEKICK_MEMORY_DIR:-$HOME/.claude/memory}"
+
+# Resolve memory directory: explicit override > default
+# In Cowork without SIDEKICK_MEMORY_DIR, skip reflection (no persistent memory to check)
+if [ -n "$SIDEKICK_MEMORY_DIR" ]; then
+  MEMORY_DIR="$SIDEKICK_MEMORY_DIR"
+elif [ "$CLAUDE_CODE_IS_COWORK" = "1" ]; then
+  # No memory dir configured in Cowork — nothing to reflect on
+  cat <<'EOF'
+{"decision": "approve"}
+EOF
+  exit 0
+else
+  MEMORY_DIR="$HOME/.claude/memory"
+fi
+
 LOCK_FILE="/tmp/sidekick-reflect-$$"
 
 # Prevent infinite loop: only fire once per session
