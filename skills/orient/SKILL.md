@@ -10,22 +10,32 @@ description: |
 
 Determine the memory directory for this session. Check in order:
 
-1. If `SIDEKICK_MEMORY_DIR` is set, use it. Skip to Step 1.
-2. If `CLAUDE_CODE_IS_COWORK=1` (Cowork session):
-   a. Find the user's mounted folder — look for writable directories under the session mount path that are not system directories (`outputs`, `uploads`, `.claude`, `.local-plugins`, `.skills`).
-   b. If a mounted folder is found, use `{mounted-folder}/.sidekick-memory/` as the memory path.
-   c. If no mounted folder is found, attempt `request_cowork_directory` to prompt the user to select one.
-   d. If no folder is available (user declined or tool unavailable), fall back to `~/.claude/memory/` and warn:
-      > "Running in ephemeral mode — memory will work this session but won't persist. Select a folder in Cowork to enable persistence."
-   e. Once resolved, persist the path for this session:
-      ```bash
-      echo "SIDEKICK_MEMORY_DIR={resolved-path}" >> "$CLAUDE_ENV_FILE"
-      ```
-3. Otherwise (Claude Code), use `~/.claude/memory/`.
+1. If `SIDEKICK_MEMORY_DIR` is set, use it. Skip to Step 0b.
+2. If `.sidekick/config.yml` exists in the current working directory (or a parent), read it. The memory path is `{.sidekick-dir}/memory/`.
+3. If `CLAUDE_CODE_IS_COWORK=1` (Cowork session):
+   a. Search mounted user folders for `.sidekick/config.yml` (exclude system dirs: `outputs`, `uploads`, `.claude`, `.local-plugins`, `.skills`).
+   b. If found, read it. If not found, tell the user: "No Sidekick config found. Run `/sidekick:setup` to get started."
+4. Otherwise (Claude Code): check `~/.claude/.sidekick/config.yml`. If found, read it. If not found, check `~/.claude/memory/index.md` for legacy layout. If neither exists, tell the user to run `/sidekick:setup`.
 
-All `~/.claude/memory/` references in Sidekick skills refer to this resolved path for the rest of the session.
+All `~/.claude/memory/` references in Sidekick skills refer to the resolved memory path for the rest of the session.
 
 See `docs/environment-detection.md` for the full detection reference.
+
+---
+
+## Step 0b — Auto-pull (if configured)
+
+Read `config.yml`. If `git_sync.enabled` is `true` and `git_sync.auto_pull` is `true`:
+
+1. Read the PAT from the credentials file (path from `config.yml`'s `credentials_file`).
+2. Construct the authenticated remote URL: `https://{PAT}@{remote-host}/{remote-path}.git`
+3. Pull:
+   ```bash
+   git -C {MEMORY_PATH} pull --rebase origin {branch}
+   ```
+4. If pull succeeds: continue silently.
+5. If pull fails (auth error): warn "Auto-pull failed — credentials may be expired. Run `/sidekick:setup` to update your PAT." Continue with local files.
+6. If pull fails (network): warn "Auto-pull failed — no network connection. Using local files." Continue.
 
 ---
 
