@@ -97,6 +97,23 @@ After all saves are complete, update `~/.claude/memory/index.md` if any of the s
 
 ---
 
+## Step 3b — Offer to push changes (if git sync enabled)
+
+If `.sidekick/config.yml` exists and `git_sync.enabled` is `true`:
+
+1. Check for uncommitted changes in the memory directory:
+   ```bash
+   git -C {MEMORY_PATH} status --porcelain
+   ```
+2. If there are changes, offer to push:
+   > "You have memory changes. Push to remote? (yes / skip)"
+3. If yes: run `/sidekick:sync`.
+4. If skip: changes remain local. They'll be pushed on the next `/sidekick:sync`.
+
+If `git_sync.enabled` is `false` or no config exists: skip this step silently.
+
+---
+
 ## Step 4 — Stale memory check
 
 Scan all `.md` files in `~/.claude/memory/` (all spaces, excluding `index.md`):
