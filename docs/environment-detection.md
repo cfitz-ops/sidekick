@@ -7,49 +7,58 @@ Sidekick runs in two environments with different persistence models.
 Check in this order:
 
 1. **Explicit override:** If `SIDEKICK_MEMORY_DIR` is set, use it. No further detection needed.
-2. **Cowork detection:** If `CLAUDE_CODE_IS_COWORK=1`, this is a Cowork session. Resolve the memory path within the user's mounted folder (see Cowork Folder Resolution below).
-3. **Default (Claude Code):** Use `~/.claude/memory/`.
+2. **Config file:** If `.sidekick/config.yml` exists in the current working directory (or a parent), read it and use `memory_path` relative to the `.sidekick/` directory.
+3. **Cowork detection:** If `CLAUDE_CODE_IS_COWORK=1`, this is a Cowork session. Find the user's mounted folder and look for `.sidekick/` there. If not found, run setup.
+4. **Default (Claude Code):** Check `~/.claude/.sidekick/config.yml`. If not found, fall back to `~/.claude/memory/` for backward compatibility.
 
 ## Memory Path by Environment
 
-| Environment | Memory Path | Persistence |
-|-------------|-------------|-------------|
-| Claude Code | `~/.claude/memory/` | Native — survives between sessions |
-| Cowork (folder mounted) | `{mounted-folder}/.sidekick-memory/` | Persists via VirtioFS to host machine |
-| Cowork (no folder) | `~/.claude/memory/` (ephemeral) | Lost between sessions — warn user |
-| Custom (`SIDEKICK_MEMORY_DIR`) | Whatever the user set | User-managed |
+| Environment | .sidekick/ location | Memory path | Persistence |
+|-------------|---------------------|-------------|-------------|
+| Claude Code (new) | `~/.claude/.sidekick/` | `~/.claude/.sidekick/memory/` | Native |
+| Claude Code (legacy) | n/a | `~/.claude/memory/` | Native (migrated on next setup) |
+| Cowork (folder mounted) | `{mounted-folder}/.sidekick/` | `{mounted-folder}/.sidekick/memory/` | VirtioFS |
+| Cowork (no folder) | ephemeral | `~/.claude/.sidekick/memory/` | Lost between sessions |
+| Custom (`SIDEKICK_MEMORY_DIR`) | n/a | Whatever the user set | User-managed |
+
+## Config File
+
+`.sidekick/config.yml` stores non-secret settings that persist between sessions:
+
+- Git remote URL and sync preferences
+- Environment hint (auto-detected or explicit)
+- Memory path (relative to `.sidekick/`)
+
+The config file is safe to commit to git. Credentials are stored separately in `.sidekick/credentials` which is gitignored.
+
+## Credential Safety
+
+Multiple layers prevent accidental PAT exposure:
+
+1. **`.sidekick/.gitignore`** — excludes the `credentials` file from git tracking
+2. **Setup writes `.gitignore` before `credentials`** — if setup fails between the two, no credentials file exists
+3. **Pre-commit hook** — installed at `.sidekick/hooks/pre-commit`, scans staged files for PAT patterns (`ghp_`, `github_pat_`) and blocks the commit
+4. **GitHub push protection** — GitHub scans pushes for leaked tokens on public repos
 
 ## Cowork Folder Resolution
 
-In Cowork, the user's selected folder is mounted into the VM via VirtioFS at a session-scoped path under `/sessions/<session-name>/mnt/<folder-name>/`. The folder name varies based on what the user selected (e.g., `Downloads`, `my-project`).
+In Cowork, the user's selected folder is mounted via VirtioFS at `/sessions/<session-name>/mnt/<folder-name>/`. The folder name varies per session.
 
-**To find the mounted folder in a skill (Claude interpreting instructions):**
+**To find `.sidekick/` in a skill:**
 
-1. Check if the current working directory is under a mounted user folder (it usually is if the user selected a folder).
-2. Look for writable directories under the session's `/mnt/` path that are not system directories (`outputs`, `uploads`, `.claude`, `.local-plugins`, `.skills`).
-3. If no mounted folder is found, use `request_cowork_directory` (if available) to prompt the user to select one.
-4. If `request_cowork_directory` is unavailable or the user declines, fall back to `~/.claude/memory/` and warn about ephemeral mode.
+1. Check the current working directory for `.sidekick/config.yml`.
+2. If not found, look for writable directories under the session mount path (excluding system dirs: `outputs`, `uploads`, `.claude`, `.local-plugins`, `.skills`) and check each for `.sidekick/config.yml`.
+3. If not found, use `request_cowork_directory` (if available) to prompt folder selection, then run `/sidekick:setup`.
+4. If no folder available, warn about ephemeral mode.
 
-**To find the mounted folder in a bash hook:**
+**In a bash hook:**
 
-Hooks cannot reliably detect the mounted folder name since it varies per session. In bash hooks, rely on `SIDEKICK_MEMORY_DIR` being set. If it is not set and `CLAUDE_CODE_IS_COWORK=1`, the hook should output a message telling the user to run `/sidekick:orient` or `/sidekick:setup` to configure the memory path.
-
-The orient or setup skill can then set `SIDEKICK_MEMORY_DIR` via `CLAUDE_ENV_FILE` to persist it for the rest of the session.
-
-## Setting SIDEKICK_MEMORY_DIR via CLAUDE_ENV_FILE
-
-In Cowork, once the memory path is resolved by a skill, persist it for the session:
-
-```bash
-echo "SIDEKICK_MEMORY_DIR={resolved-path}" >> "$CLAUDE_ENV_FILE"
-```
-
-This makes the path available to subsequent hook invocations within the same session.
+Hooks cannot search for `.sidekick/` dynamically. They check `SIDEKICK_MEMORY_DIR` first, then look for `.sidekick/config.yml` relative to common locations. If neither works, prompt the user to run `/sidekick:orient`.
 
 ## Skills That Need Detection
 
-Only entry-point skills need full detection logic:
-- **setup** — runs once, creates directory structure
-- **orient** — runs every session start
+Only entry-point skills need full detection:
+- **setup** — creates `.sidekick/` directory structure
+- **orient** — reads config, runs auto-pull, loads memory
 
-All other skills (remember, recall, reflect, status, sync) inherit the resolved path from orient's session context or fall back to `SIDEKICK_MEMORY_DIR` / `~/.claude/memory/`.
+All other skills inherit the resolved path from orient's session context.

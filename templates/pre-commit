@@ -1,0 +1,31 @@
+#!/bin/bash
+# Pre-commit hook: block commits containing GitHub PAT patterns
+# Install: cp to .sidekick/hooks/pre-commit && chmod +x
+
+STAGED=$(git diff --cached --name-only)
+
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+# Check staged file contents for PAT patterns
+if git diff --cached -S'ghp_' --name-only | grep -q .; then
+  echo "ERROR: Staged files contain a GitHub personal access token (ghp_)."
+  echo "Remove the token before committing."
+  exit 1
+fi
+
+if git diff --cached -S'github_pat_' --name-only | grep -q .; then
+  echo "ERROR: Staged files contain a GitHub personal access token (github_pat_)."
+  echo "Remove the token before committing."
+  exit 1
+fi
+
+# Also check if the credentials file itself is staged
+if echo "$STAGED" | grep -q "credentials"; then
+  echo "ERROR: The credentials file is staged for commit."
+  echo "This file should be in .gitignore. Run: git reset HEAD credentials"
+  exit 1
+fi
+
+exit 0

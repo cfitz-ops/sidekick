@@ -1,16 +1,26 @@
 #!/bin/bash
 
-# Resolve memory directory: explicit override > Cowork env file > default
+# Resolve memory directory: explicit override > config file > Cowork detection > default
 if [ -n "$SIDEKICK_MEMORY_DIR" ]; then
   MEMORY_DIR="$SIDEKICK_MEMORY_DIR"
+elif [ -f ".sidekick/config.yml" ]; then
+  # Config in current working directory — use its memory path
+  MEMORY_DIR="$(pwd)/.sidekick/memory"
 elif [ "$CLAUDE_CODE_IS_COWORK" = "1" ]; then
-  # In Cowork without SIDEKICK_MEMORY_DIR set — can't resolve the
-  # mounted folder from a bash hook. Prompt the user to run setup.
+  # In Cowork without config in cwd — prompt user
   echo "## Sidekick"
   echo "Cowork detected. Run /sidekick:setup to configure memory storage, or /sidekick:orient to load existing memory."
   exit 0
-else
+elif [ -f "$HOME/.claude/.sidekick/config.yml" ]; then
+  # Claude Code with new config layout
+  MEMORY_DIR="$HOME/.claude/.sidekick/memory"
+elif [ -d "$HOME/.claude/memory" ]; then
+  # Claude Code legacy layout
   MEMORY_DIR="$HOME/.claude/memory"
+else
+  echo "## Sidekick"
+  echo "No memory found. Run /sidekick:setup to get started."
+  exit 0
 fi
 
 INDEX="$MEMORY_DIR/index.md"

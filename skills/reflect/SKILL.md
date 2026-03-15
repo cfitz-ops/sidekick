@@ -6,7 +6,7 @@ description: |
   hook, "let's wrap up", or /sidekick:reflect.
 ---
 
-> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Default: `~/.claude/memory/`. Override: set `SIDEKICK_MEMORY_DIR` or use Cowork with a selected folder.
+> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Resolved from `.sidekick/config.yml` or `SIDEKICK_MEMORY_DIR`.
 
 ## Step 1 — Scan the conversation for capturable context
 
@@ -94,6 +94,23 @@ status: active
 Confirm each write with a one-liner: `Saved: {summary} → {path}`
 
 After all saves are complete, update `~/.claude/memory/index.md` if any of the saves are significant (new project, new key relationship, identity-level change). Revise only the affected sections.
+
+---
+
+## Step 3b — Offer to push changes (if git sync enabled)
+
+If `.sidekick/config.yml` exists and `git_sync.enabled` is `true`:
+
+1. Check for uncommitted changes in the memory directory:
+   ```bash
+   git -C {MEMORY_PATH} status --porcelain
+   ```
+2. If there are changes, offer to push:
+   > "You have memory changes. Push to remote? (yes / skip)"
+3. If yes: run `/sidekick:sync`.
+4. If skip: changes remain local. They'll be pushed on the next `/sidekick:sync`.
+
+If `git_sync.enabled` is `false` or no config exists: skip this step silently.
 
 ---
 

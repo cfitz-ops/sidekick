@@ -5,7 +5,7 @@ description: |
   Requires git repo setup during /sidekick:setup (opt-in). Use with /sidekick:sync.
 ---
 
-> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Default: `~/.claude/memory/`. Override: set `SIDEKICK_MEMORY_DIR` or use Cowork with a selected folder.
+> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Resolved from `.sidekick/config.yml` or `SIDEKICK_MEMORY_DIR`.
 
 ## Step 1 — Check if memory is a git repo
 
@@ -24,7 +24,22 @@ Run /sidekick:setup to configure sync, then try again.
 
 Do not proceed further.
 
-**Cowork note:** If git operations fail with an authentication error, Cowork VMs do not have SSH keys or interactive git credentials configured. Use HTTPS URLs with a personal access token (PAT). See `/sidekick:setup` Step 2b for details.
+---
+
+## Step 1b — Load credentials (if available)
+
+Check for `.sidekick/config.yml` in the parent directory of the memory path. If found and `git_sync.enabled` is `true`:
+
+1. Read the PAT from the credentials file.
+2. If credentials exist, configure git to use the PAT for this operation:
+   ```bash
+   git -C {MEMORY_PATH} remote set-url origin https://{PAT}@{remote-host}/{remote-path}.git
+   ```
+   (This is a temporary URL rewrite — the config file stores the clean URL without the PAT.)
+
+If no credentials file exists, proceed without — git will use whatever auth is available (SSH keys, credential helpers, etc.).
+
+**Cowork note:** If git operations fail with an authentication error, check that your PAT is stored in `.sidekick/credentials`. Run `/sidekick:setup` to configure or update credentials.
 
 ---
 
