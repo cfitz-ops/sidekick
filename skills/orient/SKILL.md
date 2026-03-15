@@ -6,13 +6,25 @@ description: |
   Auto-triggered via SessionStart hook. Can also be invoked manually with /sidekick:orient.
 ---
 
+## Step 0 — Resolve memory path
+
+Check the environment variable `SIDEKICK_MEMORY_DIR`. If set, use that as the memory directory for this session. If not set, default to `~/.claude/memory`. All `~/.claude/memory/` references in Sidekick skills refer to this resolved path.
+
+---
+
 ## Step 1 — Load the memory index
 
-Read `~/.claude/memory/index.md`.
+Read `~/.claude/memory/index.md` (using the resolved memory path).
 
 If the file does not exist: tell the user "No memory found. Run `/sidekick:setup` to get started." Then stop — do not proceed further.
 
 If the file exists: internalize its contents as session context. Do not display or quote the file to the user. Do not announce that you read it. Simply use it — you now know who this person is, what they're working on, what they prefer, and who matters to them.
+
+---
+
+## Step 1.5 — Check for workspace-scoped plugins
+
+Check for `CLAUDE.md` and `./memory/` in the current working directory. If present, another plugin (e.g., Anthropic's productivity plugin) may manage workspace-specific context — people nicknames, acronyms, project codenames, and task tracking. Sidekick should not duplicate that context. Defer shorthand decoding and task management to the workspace plugin. Sidekick owns personal identity, cross-workspace relationships, decisions, and patterns.
 
 ---
 
@@ -49,6 +61,7 @@ These rules are now active. Apply them continuously from this point forward.
 - Anything already in memory — no duplicates, no re-saves of existing content
 - Sensitive data — credentials, tokens, passwords, API keys. Never. Under any circumstances.
 - Uncommitted brainstorming — ideas the user is thinking through aloud but hasn't decided on
+- Workspace-scoped shorthand — acronyms, codenames, or nicknames that a workspace plugin already tracks (see Step 1.5)
 
 ### Capture behavior
 

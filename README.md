@@ -2,7 +2,7 @@
 
 Sidekick is a Claude plugin that builds and maintains personal context across conversations. It stores memory as plain markdown in `~/.claude/memory/`, organized into six named spaces, so Claude always knows who you are and what you're working on — without you having to re-explain it every session.
 
-Works in both **Claude Code** and **Cowork**.
+Built for **Claude Code**. Cowork compatibility is untested — see [Platform Notes](#platform-notes) below.
 
 ---
 
@@ -43,6 +43,24 @@ Memory lives in `~/.claude/memory/` and is organized into six spaces:
 | `knowledge/` | Facts, references, domain notes |
 
 An `index.md` hot cache gives Claude a fast summary without loading every file.
+
+---
+
+## Platform Notes
+
+### Claude Code
+
+Fully supported. SessionStart/Stop hooks auto-load context and prompt session reflection.
+
+### Cowork
+
+Not yet tested. Known risks:
+
+- **Filesystem access** — Cowork sandboxes folder access. `~/.claude/memory/` may require an explicit folder grant.
+- **Hooks** — SessionStart/Stop hooks may not fire. If not, run `/sidekick:orient` manually at the start of each session.
+- **Custom memory path** — Set `SIDEKICK_MEMORY_DIR` to point memory storage to an accessible directory if the default path is blocked.
+
+If you test Sidekick in Cowork, [open an issue](https://github.com/coreyfitz/sidekick/issues) with what worked and what didn't.
 
 ---
 

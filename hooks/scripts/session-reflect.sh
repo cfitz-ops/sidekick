@@ -1,5 +1,5 @@
 #!/bin/bash
-MEMORY_DIR="$HOME/.claude/memory"
+MEMORY_DIR="${SIDEKICK_MEMORY_DIR:-$HOME/.claude/memory}"
 LOCK_FILE="/tmp/sidekick-reflect-$$"
 
 # Prevent infinite loop: only fire once per session

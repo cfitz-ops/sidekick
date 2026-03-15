@@ -1,5 +1,5 @@
 #!/bin/bash
-MEMORY_DIR="$HOME/.claude/memory"
+MEMORY_DIR="${SIDEKICK_MEMORY_DIR:-$HOME/.claude/memory}"
 INDEX="$MEMORY_DIR/index.md"
 
 if [ -f "$INDEX" ]; then
