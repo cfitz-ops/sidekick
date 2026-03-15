@@ -5,7 +5,7 @@ description: |
   Requires git repo setup during /sidekick:setup (opt-in). Use with /sidekick:sync.
 ---
 
-> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Default: `~/.claude/memory/`. Override: set `SIDEKICK_MEMORY_DIR` or use Cowork with a selected folder.
+> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Resolved from `.sidekick/config.yml` or `SIDEKICK_MEMORY_DIR`.
 
 ## Step 1 — Check if memory is a git repo
 
