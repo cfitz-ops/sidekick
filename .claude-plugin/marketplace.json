@@ -1,12 +1,13 @@
 {
   "name": "sidekick",
+  "description": "Adaptive memory plugin for Claude — builds and maintains personal context across conversations.",
   "owner": {
     "name": "cfitz-ops"
   },
   "plugins": [
     {
       "name": "sidekick",
-      "source": ".",
+      "source": "./",
       "description": "An adaptive memory plugin that builds and maintains personal context across Claude conversations."
     }
   ]
