@@ -5,6 +5,8 @@ description: |
   Use when asked "what's in my memory", "memory status", or /sidekick:status.
 ---
 
+> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Default: `~/.claude/memory/`. Override: set `SIDEKICK_MEMORY_DIR` or use Cowork with a selected folder.
+
 ## Step 1 — Count files per space
 
 For each of the 6 memory spaces, count the number of `.md` files present:
