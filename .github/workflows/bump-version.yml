@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   bump-version:
@@ -39,11 +40,20 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Commit and push
+      - name: Create PR to bump version
         if: steps.diff.outputs.changed == 'true'
         run: |
+          BRANCH="chore/bump-v${{ steps.version.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add .claude-plugin/plugin.json
           git commit -m "chore: bump plugin version to ${{ steps.version.outputs.version }}"
-          git push origin main
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Bump plugin version to ${{ steps.version.outputs.version }}" \
+            --body "Automated version bump triggered by release ${{ github.event.release.tag_name }}." \
+            --head "$BRANCH" \
+            --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
