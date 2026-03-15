@@ -8,7 +8,24 @@ description: |
 
 ## Step 0 — Resolve memory path
 
-Check the environment variable `SIDEKICK_MEMORY_DIR`. If set, use that as the memory directory for this session. If not set, default to `~/.claude/memory`. All `~/.claude/memory/` references in Sidekick skills refer to this resolved path.
+Determine the memory directory for this session. Check in order:
+
+1. If `SIDEKICK_MEMORY_DIR` is set, use it. Skip to Step 1.
+2. If `CLAUDE_CODE_IS_COWORK=1` (Cowork session):
+   a. Find the user's mounted folder — look for writable directories under the session mount path that are not system directories (`outputs`, `uploads`, `.claude`, `.local-plugins`, `.skills`).
+   b. If a mounted folder is found, use `{mounted-folder}/.sidekick-memory/` as the memory path.
+   c. If no mounted folder is found, attempt `request_cowork_directory` to prompt the user to select one.
+   d. If no folder is available (user declined or tool unavailable), fall back to `~/.claude/memory/` and warn:
+      > "Running in ephemeral mode — memory will work this session but won't persist. Select a folder in Cowork to enable persistence."
+   e. Once resolved, persist the path for this session:
+      ```bash
+      echo "SIDEKICK_MEMORY_DIR={resolved-path}" >> "$CLAUDE_ENV_FILE"
+      ```
+3. Otherwise (Claude Code), use `~/.claude/memory/`.
+
+All `~/.claude/memory/` references in Sidekick skills refer to this resolved path for the rest of the session.
+
+See `docs/environment-detection.md` for the full detection reference.
 
 ---
 

@@ -1,5 +1,18 @@
 #!/bin/bash
-MEMORY_DIR="${SIDEKICK_MEMORY_DIR:-$HOME/.claude/memory}"
+
+# Resolve memory directory: explicit override > Cowork env file > default
+if [ -n "$SIDEKICK_MEMORY_DIR" ]; then
+  MEMORY_DIR="$SIDEKICK_MEMORY_DIR"
+elif [ "$CLAUDE_CODE_IS_COWORK" = "1" ]; then
+  # In Cowork without SIDEKICK_MEMORY_DIR set — can't resolve the
+  # mounted folder from a bash hook. Prompt the user to run setup.
+  echo "## Sidekick"
+  echo "Cowork detected. Run /sidekick:setup to configure memory storage, or /sidekick:orient to load existing memory."
+  exit 0
+else
+  MEMORY_DIR="$HOME/.claude/memory"
+fi
+
 INDEX="$MEMORY_DIR/index.md"
 
 if [ -f "$INDEX" ]; then

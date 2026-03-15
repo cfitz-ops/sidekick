@@ -5,6 +5,8 @@ description: |
   Determines the right memory space, creates or updates the file, and confirms.
 ---
 
+> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Default: `~/.claude/memory/`. Override: set `SIDEKICK_MEMORY_DIR` or use Cowork with a selected folder.
+
 ## Step 1 — Parse what to save
 
 Extract the core fact or context from the user's message. Identify:

@@ -6,6 +6,8 @@ description: |
   hook, "let's wrap up", or /sidekick:reflect.
 ---
 
+> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Default: `~/.claude/memory/`. Override: set `SIDEKICK_MEMORY_DIR` or use Cowork with a selected folder.
+
 ## Step 1 — Scan the conversation for capturable context
 
 Review the full conversation. Look for these signals:
