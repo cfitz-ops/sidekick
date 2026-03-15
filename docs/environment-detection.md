@@ -55,6 +55,19 @@ In Cowork, the user's selected folder is mounted via VirtioFS at `/sessions/<ses
 
 Hooks cannot search for `.sidekick/` dynamically. They check `SIDEKICK_MEMORY_DIR` first, then look for `.sidekick/config.yml` relative to common locations. If neither works, prompt the user to run `/sidekick:orient`.
 
+## Cowork Git Limitation
+
+The Cowork mounted filesystem (VirtioFS) does not support `unlink()` on git lock files. This means `git clone`, `git fetch`, `git pull`, and `git push` all fail when targeting the mounted folder directly.
+
+**Workaround:** All git operations must run in a VM-local temp directory (`/tmp/sidekick-git-work/`). Content files (`.md` only, not `.git/`) are then copied to/from the mounted `.sidekick/memory/` folder.
+
+This affects:
+- `/sidekick:setup` Step 2b (clone) and Step 6 (git init)
+- `/sidekick:sync` (all git operations)
+- `/sidekick:orient` Step 0b (auto-pull)
+
+In Claude Code, git works directly in the memory directory — no workaround needed.
+
 ## Skills That Need Detection
 
 Only entry-point skills need full detection:
