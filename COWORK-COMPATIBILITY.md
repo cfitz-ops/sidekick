@@ -1,5 +1,7 @@
 # Cowork Compatibility Gaps
 
+> **Resolved (2026-03-15):** All issues below are addressed in the `feature/cowork-compatibility` branch. See `docs/environment-detection.md` for the detection approach, and the updated setup/orient skills for the implementation.
+
 Sidekick README claims "Works in both Claude Code and Cowork" but provides no Cowork-specific guidance. Testing on 2026-03-15 surfaced three areas that need investigation and likely fixes.
 
 ## 1. Filesystem Access
