@@ -1,0 +1,15 @@
+# .sidekick/config.yml
+# Non-secret Sidekick configuration. Safe to commit to git.
+version: 1
+environment: auto  # auto | cowork | claude-code
+
+memory_path: memory/  # Relative to .sidekick/
+
+git_sync:
+  enabled: false
+  remote: ""
+  branch: main
+  auto_pull: true    # Pull on session start
+  auto_push: false   # Require explicit /sidekick:sync or offer at reflect
+
+credentials_file: credentials  # Relative to .sidekick/, must be gitignored
