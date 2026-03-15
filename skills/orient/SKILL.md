@@ -29,13 +29,36 @@ Read `config.yml`. If `git_sync.enabled` is `true` and `git_sync.auto_pull` is `
 
 1. Read the PAT from the credentials file (path from `config.yml`'s `credentials_file`).
 2. Construct the authenticated remote URL: `https://{PAT}@{remote-host}/{remote-path}.git`
-3. Pull:
-   ```bash
-   git -C {MEMORY_PATH} pull --rebase origin {branch}
-   ```
-4. If pull succeeds: continue silently.
-5. If pull fails (auth error): warn "Auto-pull failed — credentials may be expired. Run `/sidekick:setup` to update your PAT." Continue with local files.
-6. If pull fails (network): warn "Auto-pull failed — no network connection. Using local files." Continue.
+
+**If `CLAUDE_CODE_IS_COWORK=1` (Cowork):**
+
+Clone to a temp directory and copy updated content to the mounted folder:
+
+```bash
+TEMP_DIR="/tmp/sidekick-git-work"
+rm -rf "$TEMP_DIR"
+git clone {authenticated-url} "$TEMP_DIR"
+```
+
+If clone succeeds: copy content files (not `.git/`) from temp to `{MEMORY_PATH}`:
+
+```bash
+rsync -a --exclude='.git' "$TEMP_DIR"/ {MEMORY_PATH}/
+rm -rf "$TEMP_DIR"
+```
+
+**Otherwise (Claude Code):**
+
+Pull directly:
+
+```bash
+git -C {MEMORY_PATH} pull --rebase origin {branch}
+```
+
+**Error handling (both environments):**
+
+- If pull/clone fails (auth error): warn "Auto-pull failed — credentials may be expired. Run `/sidekick:setup` to update your PAT." Continue with local files.
+- If pull/clone fails (network): warn "Auto-pull failed — no network connection. Using local files." Continue.
 
 ---
 
