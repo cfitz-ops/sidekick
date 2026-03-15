@@ -36,7 +36,7 @@ For each file found in `~/.claude/memory/`, apply these rules in order:
 
 **Merge rule:** If two files map to the same destination (e.g., `*work_patterns*` and `feedback_*` both → `identity/preferences.md`), read both, merge content under logical headings, write the merged result to the destination.
 
-**Strip the prefix** from destination filenames: `project_tiger-pace.md` → `projects/tiger-pace.md`, not `projects/project_tiger-pace.md`.
+**Strip the prefix** from destination filenames: `project_my-app.md` → `projects/my-app.md`, not `projects/project_my-app.md`.
 
 After moving each file, confirm with a one-liner: `Migrated: {source} → {destination}`
 

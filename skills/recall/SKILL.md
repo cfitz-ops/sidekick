@@ -21,7 +21,7 @@ List all files across every memory space:
 ls ~/.claude/memory/identity/ ~/.claude/memory/relationships/ ~/.claude/memory/projects/ ~/.claude/memory/decisions/ ~/.claude/memory/patterns/ ~/.claude/memory/knowledge/ 2>/dev/null
 ```
 
-Compare filenames against the query. A filename match (e.g., `sarah.md` for query "Sarah") is a strong signal — include that file in results.
+Compare filenames against the query. A filename match (e.g., `alice.md` for query "Alice") is a strong signal — include that file in results.
 
 ---
 
@@ -59,12 +59,12 @@ For each matching file, output:
 Format as a compact list, not a table. Example:
 
 ```
-relationships/sarah.md — relationship
-  Sarah joined the product team as PM in March 2025.
-  Key context: she owns the roadmap for Tiger Pace.
+relationships/alice.md — relationship
+  Alice joined the product team as PM in March 2025.
+  Key context: she owns the roadmap for my-web-app.
 
-decisions/chose-vercel.md — decision
-  Chose Vercel over Railway for Tiger Pace (cost + DX).
+decisions/chose-netlify.md — decision
+  Chose Netlify over Heroku for my-web-app (cost + DX).
   Decision date: 2025-02-10.
 ```
 

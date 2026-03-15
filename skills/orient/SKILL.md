@@ -41,7 +41,7 @@ These rules are now active. Apply them continuously from this point forward.
 - **New projects:** Any new initiative, product, or effort the user discusses substantively. Write to `projects/{project-name}.md`.
 - **Decisions:** Any choice made with reasoning — what was decided, what the alternatives were, why this option won. Write to `decisions/{decision-name}.md`.
 - **Tool or platform choices:** Any new tool adopted or rejected and why. Write to either `decisions/` (if a deliberate choice) or `identity/stack.md` (if it's now part of their standard stack).
-- **Corrections:** If the user contradicts something in memory ("actually, Sarah moved to product"), update the relevant file immediately.
+- **Corrections:** If the user contradicts something in memory ("actually, Alice moved to product"), update the relevant file immediately.
 
 ### What NOT to capture
 
@@ -53,7 +53,7 @@ These rules are now active. Apply them continuously from this point forward.
 ### Capture behavior
 
 - **Save immediately** when you recognize something capturable. Do not wait for the session to end.
-- **Confirm with a one-liner:** `Saved: {brief summary} → {path}` — e.g., `Saved: Sarah moved to product team → relationships/sarah.md`
+- **Confirm with a one-liner:** `Saved: {brief summary} → {path}` — e.g., `Saved: Alice moved to product team → relationships/alice.md`
 - **No confirmation prompt before saving.** Asking "should I save this?" interrupts the flow. Save it. If the user wants to undo, they'll say "undo that" or "forget that" — revert the last save.
 - **Batch surfacing:** If you make 3 or more captures in a single session, surface them together at the next natural pause (e.g., end of a topic, before a new question) rather than announcing each one individually.
 - **Err toward less.** When in doubt, don't capture. The `/sidekick:reflect` skill at session end is designed to catch what was missed. Proactive capture is for clear, high-confidence signals — not speculation.

@@ -22,9 +22,9 @@ Route to exactly one space using these rules, in order:
 
 | What the user wants to save | Space | Example path |
 |-----------------------------|-------|--------------|
-| A person — name, role, context, relationship | `relationships/` | `relationships/sarah.md` |
-| A project or initiative | `projects/` | `projects/tiger-pace.md` |
-| A tool or platform choice and its rationale | `decisions/` | `decisions/chose-vercel.md` |
+| A person — name, role, context, relationship | `relationships/` | `relationships/alice.md` |
+| A project or initiative | `projects/` | `projects/my-web-app.md` |
+| A tool or platform choice and its rationale | `decisions/` | `decisions/chose-netlify.md` |
 | A process or workflow decision | `decisions/` | `decisions/weekly-review.md` |
 | Role, background, or a standing preference | `identity/` | `identity/preferences.md` |
 | Tribal or institutional knowledge | `knowledge/` | `knowledge/deploy-process.md` |
@@ -86,8 +86,8 @@ Saved: {brief summary} → {path}
 ```
 
 Examples:
-- `Saved: Sarah joined the product team as PM → relationships/sarah.md`
-- `Saved: Chose Vercel over Railway for Tiger Pace (cost + DX) → decisions/chose-vercel.md`
+- `Saved: Alice joined the product team as PM → relationships/alice.md`
+- `Saved: Chose Netlify over Heroku for my-web-app (cost + DX) → decisions/chose-netlify.md`
 - `Saved: Prefer concise responses without preamble → identity/preferences.md`
 
 Do not output the file contents. Do not summarize what you did at length. One line.

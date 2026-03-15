@@ -46,11 +46,11 @@ Example:
 ```
 Here's what I'd save from this session:
 
-1. Marcus Chen → relationships/marcus-chen.md
-   "Head of engineering at Atrium; working with you on the Tiger Pace integration"
+1. Bob Chen → relationships/bob-chen.md
+   "Head of engineering at Acme Corp; working with you on the my-web-app integration"
 
-2. Chose Neon over PlanetScale → decisions/chose-neon.md
-   "Selected Neon for Tiger Pace DB; cited branching workflow and free tier"
+2. Chose Postgres over MySQL → decisions/chose-postgres.md
+   "Selected Postgres for my-web-app DB; cited branching workflow and free tier"
 
 3. Prefer async code review over sync pairing → patterns/code-review.md
    "You mentioned preferring written async feedback over live pairing sessions"
