@@ -4,7 +4,7 @@ description: |
   First-run onboarding for Sidekick. Detects the runtime environment, creates the
   .sidekick/ directory structure with config and credential safety, and either clones
   an existing memory repo, migrates legacy files, or runs conversational onboarding.
-  Use when: user says "setup sidekick", "get started", first install, or no config found.
+  Use when: user says "setup sidekick", "setup memory", "sidekick get started", or no .sidekick/config.yml found.
 ---
 
 ## Step 0 — Detect environment and resolve .sidekick/ location
