@@ -1,29 +1,58 @@
 ---
 name: setup
 description: |
-  First-run onboarding for Sidekick. Detects existing memory files and migrates them
-  into the structured memory space, or runs a short conversational onboarding for new users.
+  First-run onboarding for Sidekick. Detects the runtime environment, resolves the memory
+  path, and either migrates existing files, clones an existing repo, or runs conversational
+  onboarding for new users.
   Use when: user says "setup sidekick", "get started", first install, or no index.md exists.
 ---
 
-## Step 1 — Scan for existing memory files
+## Step 0 — Detect environment and resolve memory path
 
-Check whether `~/.claude/memory/` exists and contains any `.md` files.
+Determine where memory should live. Check in order:
+
+1. If `SIDEKICK_MEMORY_DIR` is set, use it as the memory directory.
+2. If `CLAUDE_CODE_IS_COWORK=1` (Cowork session):
+   - Find the user's mounted folder — look for writable directories under the session mount path that are not system directories (`outputs`, `uploads`, `.claude`, `.local-plugins`, `.skills`).
+   - If a mounted folder is found, use `{mounted-folder}/.sidekick-memory/`.
+   - If no mounted folder is found, attempt `request_cowork_directory` to prompt the user to select one:
+     > "Sidekick needs a folder to persist memory between Cowork sessions. Please select a folder."
+   - If no folder is available (user declined or tool unavailable):
+     > "Continuing in ephemeral mode — memory will work this session but won't persist between sessions."
+     Use `~/.claude/memory/` and note that persistence is not available.
+   - Once resolved, persist the path for this session:
+     ```bash
+     echo "SIDEKICK_MEMORY_DIR={resolved-path}" >> "$CLAUDE_ENV_FILE"
+     ```
+3. Otherwise (Claude Code), use `~/.claude/memory/`.
+
+Use this resolved path for all subsequent steps. All path references below mean "the resolved memory path" (referred to as `{MEMORY_PATH}`).
+
+See `docs/environment-detection.md` for the full detection reference.
+
+---
+
+## Step 1 — Check for existing memory
+
+Check whether the resolved memory directory exists and contains any `.md` files.
 
 ```bash
-ls ~/.claude/memory/*.md 2>/dev/null
-ls ~/.claude/memory/**/*.md 2>/dev/null
+ls {MEMORY_PATH}/*.md 2>/dev/null
+ls {MEMORY_PATH}/**/*.md 2>/dev/null
 ```
 
 Branch on the result:
-- **Files found** → go to Step 2 (migrate)
-- **Empty or missing** → go to Step 3 (onboarding)
+
+- **Files found** → go to Step 2 (migrate existing files)
+- **Empty or missing** → ask: "Do you have an existing Sidekick memory repo you'd like to clone? (yes / no)"
+  - **Yes** → go to Step 2b (clone existing repo)
+  - **No** → go to Step 3 (new user onboarding)
 
 ---
 
 ## Step 2 — Migrate existing files
 
-For each file found in `~/.claude/memory/`, apply these rules in order:
+For each file found in `{MEMORY_PATH}`, apply these rules in order:
 
 | If the filename matches… | Move it to… |
 |--------------------------|-------------|
@@ -44,6 +73,44 @@ Then skip to Step 4.
 
 ---
 
+## Step 2b — Clone existing memory repo
+
+Ask for the repo URL: "Paste your memory repo URL (e.g., `git@github.com:you/memory.git` or `https://github.com/you/memory.git`):"
+
+Attempt the clone:
+
+```bash
+git clone {url} {MEMORY_PATH}
+```
+
+**If the clone succeeds:** Confirm what was pulled (`ls {MEMORY_PATH}/`), then skip to Step 4 (create any missing space directories).
+
+**If the clone fails with an authentication error:**
+
+Report the failure clearly, then offer auth options based on the URL type:
+
+For HTTPS URLs:
+> Clone failed — authentication required.
+>
+> **Option 1: Personal access token (PAT)**
+> Create a token at https://github.com/settings/tokens with `repo` scope, then provide the URL as:
+> `https://{token}@github.com/{user}/{repo}.git`
+>
+> **Option 2: Switch to SSH**
+> Provide an SSH URL instead: `git@github.com:{user}/{repo}.git`
+> (Requires SSH keys configured on this machine.)
+
+For SSH URLs:
+> Clone failed — SSH key not found or not authorized.
+>
+> This environment may not have SSH keys configured. Try an HTTPS URL with a personal access token instead:
+> `https://{token}@github.com/{user}/{repo}.git`
+> Create a token at https://github.com/settings/tokens with `repo` scope.
+
+Wait for the user to provide a corrected URL, then retry the clone. If the second attempt also fails, suggest continuing with new-user onboarding (Step 3) and setting up sync later.
+
+---
+
 ## Step 3 — Conversational onboarding (new users only)
 
 Ask these four questions one at a time. Wait for the answer to each before asking the next. Do not rush or batch them.
@@ -55,9 +122,9 @@ Ask these four questions one at a time. Wait for the answer to each before askin
 
 After collecting all answers:
 
-- Write `~/.claude/memory/identity/profile.md` with the answer to Q1. Use the `templates/identity.md` format.
-- Write `~/.claude/memory/identity/stack.md` with the answer to Q2. Use the `templates/identity.md` format.
-- Write `~/.claude/memory/identity/preferences.md` with answers to Q3 and Q4 combined. Use the `templates/identity.md` format.
+- Write `{MEMORY_PATH}/identity/profile.md` with the answer to Q1. Use the `templates/identity.md` format.
+- Write `{MEMORY_PATH}/identity/stack.md` with the answer to Q2. Use the `templates/identity.md` format.
+- Write `{MEMORY_PATH}/identity/preferences.md` with answers to Q3 and Q4 combined. Use the `templates/identity.md` format.
 
 Set `name`, `type: identity`, `created`, `modified`, and `status: active` in the YAML frontmatter of each file. Use today's date for `created` and `modified`.
 
@@ -68,19 +135,19 @@ Set `name`, `type: identity`, `created`, `modified`, and `status: active` in the
 Create all 6 memory space directories if they don't already exist:
 
 ```bash
-mkdir -p ~/.claude/memory/identity
-mkdir -p ~/.claude/memory/relationships
-mkdir -p ~/.claude/memory/projects
-mkdir -p ~/.claude/memory/decisions
-mkdir -p ~/.claude/memory/patterns
-mkdir -p ~/.claude/memory/knowledge
+mkdir -p {MEMORY_PATH}/identity
+mkdir -p {MEMORY_PATH}/relationships
+mkdir -p {MEMORY_PATH}/projects
+mkdir -p {MEMORY_PATH}/decisions
+mkdir -p {MEMORY_PATH}/patterns
+mkdir -p {MEMORY_PATH}/knowledge
 ```
 
 ---
 
 ## Step 5 — Generate index.md
 
-Read all `.md` files in `~/.claude/memory/` (all spaces). Generate `~/.claude/memory/index.md` using the structure from `templates/index.md`:
+Read all `.md` files in `{MEMORY_PATH}` (all spaces). Generate `{MEMORY_PATH}/index.md` using the structure from `templates/index.md`:
 
 - **Identity section:** Write a 2–3 sentence summary drawn from `identity/profile.md`, `identity/stack.md`, and `identity/preferences.md`.
 - **Active Projects table:** One row per file in `projects/` with status `active`. Columns: project name, status, one-line goal.
@@ -90,21 +157,29 @@ Read all `.md` files in `~/.claude/memory/` (all spaces). Generate `~/.claude/me
 
 Keep `index.md` under 100 lines. If content is long, summarize — don't paste full file contents.
 
-Write the file to `~/.claude/memory/index.md`.
+Write the file to `{MEMORY_PATH}/index.md`.
 
-Confirm: `Generated: ~/.claude/memory/index.md`
+Confirm: `Generated: {MEMORY_PATH}/index.md`
 
 ---
 
 ## Step 6 — Offer git sync (optional)
 
-After index.md is written, ask once:
+Check if the memory directory is already a git repo:
+
+```bash
+git -C {MEMORY_PATH} rev-parse --is-inside-work-tree 2>/dev/null
+```
+
+If already a git repo with a remote configured: skip this step. Sync is already set up (likely from Step 2b clone).
+
+If not a git repo, ask once:
 
 > "Would you like to set up a private git repo for cross-device sync? This lets you keep memory in sync across machines. You'll need an empty private repo URL ready. (yes / skip)"
 
 **If yes:**
 ```bash
-cd ~/.claude/memory
+cd {MEMORY_PATH}
 git init
 git add -A
 git commit -m "sidekick: initial memory setup"
@@ -123,6 +198,6 @@ Confirm: `Sync ready. Run /sidekick:sync to push future changes.`
 ## Final confirmation
 
 Print a brief summary:
-- How many files were migrated (or which identity files were created)
+- How many files were migrated (or which identity files were created, or what was cloned)
 - That `index.md` was generated
 - How to use Sidekick going forward: `/sidekick:orient` loads context, `/sidekick:remember` saves things explicitly, `/sidekick:reflect` reviews at session end
