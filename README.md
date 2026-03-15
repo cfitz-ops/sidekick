@@ -54,13 +54,25 @@ Fully supported. SessionStart/Stop hooks auto-load context and prompt session re
 
 ### Cowork
 
-Not yet tested. Known risks:
+Sidekick works in Cowork with some differences from Claude Code:
 
-- **Filesystem access** — Cowork sandboxes folder access. `~/.claude/memory/` may require an explicit folder grant.
-- **Hooks** — SessionStart/Stop hooks may not fire. If not, run `/sidekick:orient` manually at the start of each session.
-- **Custom memory path** — Set `SIDEKICK_MEMORY_DIR` to point memory storage to an accessible directory if the default path is blocked.
+**Setup:**
+1. Install the plugin in Cowork
+2. Select a folder in Cowork's file picker — Sidekick stores memory in `.sidekick-memory/` inside this folder
+3. Run `/sidekick:setup` to onboard
 
-If you test Sidekick in Cowork, [open an issue](https://github.com/coreyfitz/sidekick/issues) with what worked and what didn't.
+**What works:**
+- All skills (`/sidekick:orient`, `/sidekick:remember`, `/sidekick:recall`, `/sidekick:reflect`, `/sidekick:status`)
+- Memory persistence (requires a selected folder — files persist on your machine via VirtioFS)
+- Git sync (`/sidekick:sync`) with PAT-based HTTPS authentication
+
+**Differences from Claude Code:**
+- **First session:** Hooks can't auto-detect the mounted folder path. Run `/sidekick:setup` or `/sidekick:orient` to configure — this persists for the rest of the session.
+- **No auto-reflect** — SessionStop hooks may not fire. Run `/sidekick:reflect` before ending a session.
+- **Authentication** — SSH keys and interactive git credentials are not available in the Cowork VM. Use HTTPS URLs with a personal access token for git sync.
+- **Memory location** — Memory is stored in your selected folder at `.sidekick-memory/` instead of `~/.claude/memory/`.
+
+**Without a folder selected:** Sidekick works within a single session but memory does not persist. You'll be warned at setup time and can select a folder at any point.
 
 ---
 
