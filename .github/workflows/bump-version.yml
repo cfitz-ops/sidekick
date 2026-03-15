@@ -1,0 +1,49 @@
+name: Bump plugin version on release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Extract version from release tag
+        id: version
+        run: |
+          # Strip leading 'v' or 'v.' from tag name
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v.}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Update plugin.json
+        run: |
+          jq --arg v "${{ steps.version.outputs.version }}" \
+            '.version = $v' .claude-plugin/plugin.json > tmp.json \
+            && mv tmp.json .claude-plugin/plugin.json
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet .claude-plugin/plugin.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .claude-plugin/plugin.json
+          git commit -m "chore: bump plugin version to ${{ steps.version.outputs.version }}"
+          git push origin main
