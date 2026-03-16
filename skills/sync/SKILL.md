@@ -5,142 +5,165 @@ description: |
   Requires git repo setup during /sidekick:setup (opt-in). Use with /sidekick:sync.
 ---
 
-> **Memory path:** All `~/.claude/memory/` references below use the memory directory resolved at session start (see orient Step 0). Resolved from `.sidekick/config.yml` or `SIDEKICK_MEMORY_DIR`.
+## Step 0 — Ensure context is loaded
 
-## Step 1 — Check if memory is a git repo
+If context has not already been loaded this session (i.e., orient has not run), resolve the memory path now:
 
-Run:
+1. Find `.sidekick/config.yml` in the current working directory, or check `~/.claude/.sidekick/config.yml`, or use `SIDEKICK_MEMORY_DIR`. See orient Step 0 for the full detection logic.
 
-```bash
-git -C ~/.claude/memory/ rev-parse --is-inside-work-tree 2>/dev/null
-```
-
-If this returns anything other than `true`, the memory directory is not a git repo. Stop and tell the user:
-
-```
-Sync requires a git repo at ~/.claude/memory/. This is set up during /sidekick:setup.
-Run /sidekick:setup to configure sync, then try again.
-```
-
-Do not proceed further.
+Sync does not need to load the memory index — it only needs the resolved path and config. All `~/.claude/memory/` references below use the resolved memory path.
 
 ---
 
-## Step 1b — Load credentials (if available)
+## Step 1 — Check sync is configured
 
-Check for `.sidekick/config.yml` in the parent directory of the memory path. If found and `git_sync.enabled` is `true`:
+Read `.sidekick/config.yml`. If `git_sync.enabled` is not `true`, stop and tell the user:
 
-1. Read the PAT from the credentials file.
-2. If credentials exist, configure git to use the PAT for this operation:
-   ```bash
-   git -C {MEMORY_PATH} remote set-url origin https://{PAT}@{remote-host}/{remote-path}.git
-   ```
-   (This is a temporary URL rewrite — the config file stores the clean URL without the PAT.)
+```
+Git sync is not configured. Run /sidekick:setup to set it up.
+```
 
-If no credentials file exists, proceed without — git will use whatever auth is available (SSH keys, credential helpers, etc.).
-
-**Cowork note:** If git operations fail with an authentication error, check that your PAT is stored in `.sidekick/credentials`. Run `/sidekick:setup` to configure or update credentials.
+Read the remote URL from `config.yml`'s `git_sync.remote` and the branch from `git_sync.branch`.
 
 ---
 
-## Step 2 — Check for a remote
+## Step 2 — Load credentials
 
-Run:
+Read the PAT from the credentials file (path from `config.yml`'s `credentials_file`, relative to `.sidekick/`).
+
+If no credentials file exists or PAT is empty:
+
+```
+No credentials found. Run /sidekick:setup to configure your GitHub PAT.
+```
+
+Construct the authenticated URL: `https://{PAT}@{remote-host}/{remote-path}.git`
+
+---
+
+## Step 3 — Determine git strategy
+
+**If `CLAUDE_CODE_IS_COWORK=1` (Cowork):**
+
+The mounted filesystem does not support git lock files. All git operations must run in a VM-local temp directory. Go to Step 4a (Cowork sync).
+
+**Otherwise (Claude Code):**
+
+Git works directly in the memory directory. Go to Step 4b (direct sync).
+
+---
+
+## Step 4a — Cowork sync (temp-path strategy)
+
+### Pull remote changes
 
 ```bash
-git -C ~/.claude/memory/ remote -v
+TEMP_DIR="/tmp/sidekick-git-work"
+rm -rf "$TEMP_DIR"
+git clone {authenticated-url} "$TEMP_DIR"
 ```
 
-If no remote is configured, stop and tell the user:
+If clone fails (auth): warn "Sync failed — credentials may be expired. Run `/sidekick:setup` to update your PAT." Stop.
+
+If clone fails (network): warn "Sync failed — no network connection." Stop.
+
+### Merge local changes into the clone
+
+For each `.md` file in `{MEMORY_PATH}` (the mounted folder), compare it against the cloned copy in `$TEMP_DIR`:
+
+- **File exists in both, local is newer** (by `modified` date in frontmatter): copy local version to `$TEMP_DIR`, overwriting the remote version.
+- **File exists in both, remote is newer**: copy remote version to `{MEMORY_PATH}`, overwriting the local version.
+- **File only exists locally**: copy to `$TEMP_DIR` (new local file).
+- **File only exists in remote**: copy to `{MEMORY_PATH}` (new remote file).
+
+### Commit and push
+
+```bash
+cd "$TEMP_DIR"
+git add -A
+```
+
+If there are staged changes:
+
+```bash
+git commit -m "sidekick: sync $(date +%Y-%m-%d)"
+git push origin {branch}
+```
+
+### Copy final state back to mounted folder
+
+```bash
+rsync -a --exclude='.git' "$TEMP_DIR"/ {MEMORY_PATH}/
+```
+
+### Report
 
 ```
-No remote configured for ~/.claude/memory/. Sync requires a remote (e.g., a private GitHub repo).
-Run /sidekick:setup to add a remote, then try again.
+Sync complete.
+  Pulled:  {N} files updated from remote
+  Pushed:  {N} files pushed to remote
+  (or "Memory is already in sync. No changes.")
+```
+
+Clean up:
+
+```bash
+rm -rf "$TEMP_DIR"
 ```
 
 ---
 
-## Step 3 — Stage all changes
+## Step 4b — Direct sync (Claude Code)
 
-Run:
+### Check if memory is a git repo
 
 ```bash
-git -C ~/.claude/memory/ add -A
+git -C {MEMORY_PATH} rev-parse --is-inside-work-tree 2>/dev/null
+```
+
+If not a git repo, stop: "Sync requires a git repo. Run `/sidekick:setup` to configure sync."
+
+### Stage all changes
+
+```bash
+git -C {MEMORY_PATH} add -A
 ```
 
 Check if there is anything staged:
 
 ```bash
-git -C ~/.claude/memory/ diff --cached --name-only
+git -C {MEMORY_PATH} diff --cached --name-only
 ```
 
-Note the list of staged files. If there are no staged changes, skip Step 4 and note that nothing was committed.
+If no staged changes, skip to pull.
 
----
-
-## Step 4 — Commit local changes
-
-If there are staged changes, commit with a date-stamped message:
+### Commit
 
 ```bash
-git -C ~/.claude/memory/ commit -m "sidekick: sync $(date +%Y-%m-%d)"
+git -C {MEMORY_PATH} commit -m "sidekick: sync $(date +%Y-%m-%d)"
 ```
 
-Note the commit hash and number of files committed.
-
----
-
-## Step 5 — Pull remote changes
-
-Pull with rebase to incorporate any remote changes cleanly:
+### Pull
 
 ```bash
-git -C ~/.claude/memory/ pull --rebase origin $(git -C ~/.claude/memory/ branch --show-current)
+git -C {MEMORY_PATH} pull --rebase origin {branch}
 ```
 
-If the pull succeeds, continue to Step 6.
+If rebase conflict: stop and report conflicting files. Offer "keep mine" / "keep theirs" options. Do not push.
 
-If the pull results in a rebase conflict, stop and report:
-
-```
-Conflict during pull. Resolve before pushing.
-Conflicting files:
-  {list conflicting files}
-
-Options:
-  - Edit the conflicted files, then run /sidekick:sync again.
-  - Or tell me which version to keep ("keep mine" / "keep theirs") for each file.
-```
-
-Do not push. Wait for user instructions.
-
----
-
-## Step 6 — Push local changes
-
-Run:
+### Push
 
 ```bash
-git -C ~/.claude/memory/ push origin $(git -C ~/.claude/memory/ branch --show-current)
+git -C {MEMORY_PATH} push origin {branch}
 ```
 
-If the push fails (e.g., rejected), report the error verbatim and stop. Do not force push.
+If push fails, report error verbatim. Do not force push.
 
----
-
-## Step 7 — Report status
-
-Output a short summary:
+### Report
 
 ```
 Sync complete.
   Committed: {N} files  (or "Nothing to commit")
   Pulled:    {N} commits from remote  (or "Already up to date")
   Pushed:    {N} commits to remote  (or "Nothing to push")
-```
-
-If the entire sync was a no-op (nothing committed, already up to date, nothing pushed), say:
-
-```
-Memory is already in sync. No changes.
 ```

@@ -32,6 +32,12 @@ Check what exists at the resolved root:
 
 **If `{SIDEKICK_ROOT}/config.yml` exists:** Setup was already completed. Tell the user and offer to re-run onboarding or reconfigure git sync. Do not overwrite existing files without confirmation.
 
+**Check for prior failed setup:** If `{SIDEKICK_ROOT}/memory/.git` exists but `{SIDEKICK_ROOT}/config.yml` does not, a previous setup attempt left an incomplete state. Surface:
+
+> "It looks like a previous setup attempt left some files behind. Routing around them — this won't affect your setup."
+
+Do not attempt to delete the orphaned `.git/` directory (it may be on a filesystem that doesn't support deletion of lock files). Proceed with setup normally — the orphaned directory does not interfere with reading or writing `.md` files.
+
 **If `{SIDEKICK_ROOT}` does not exist or has no config:**
 
 Check for legacy memory files that need migration:
@@ -66,11 +72,18 @@ Then skip to Step 4 (which creates any missing directories and the config).
 
 Ask for the repo URL: "Paste your memory repo URL (e.g., `https://github.com/you/memory.git`):"
 
-**Before cloning, ask for a GitHub PAT:**
+**Ask for a GitHub PAT with inline guidance:**
 
-> "To clone a private repo in this environment, I need a GitHub Personal Access Token."
-> "Create one at https://github.com/settings/tokens with `repo` scope."
-> "Paste the token (it starts with `ghp_` or `github_pat_`):"
+> "To clone a private repo, I need a GitHub Personal Access Token (PAT). Here's how to create one:
+>
+> 1. Go to https://github.com/settings/tokens?type=beta (fine-grained tokens)
+> 2. Click **Generate new token**
+> 3. Name it something like `sidekick-memory`
+> 4. Under **Repository access**, select **Only select repositories** and pick your memory repo
+> 5. Under **Permissions → Repository permissions**, set **Contents** to **Read and write**
+> 6. Click **Generate token** and paste it here
+>
+> The token starts with `github_pat_`. It will be stored locally in a gitignored file — never committed."
 
 **Important: Create the safety files BEFORE storing the PAT.**
 
@@ -81,14 +94,40 @@ Ask for the repo URL: "Paste your memory repo URL (e.g., `https://github.com/you
    github_pat={the-token}
    ```
 4. Construct the authenticated URL: `https://{PAT}@github.com/{user}/{repo}.git`
-5. Clone into the memory subdirectory:
-   ```bash
-   git clone {authenticated-url} {SIDEKICK_ROOT}/memory
-   ```
 
-**If the clone succeeds:** Confirm what was pulled, then continue to Step 4.
+**Clone — environment-aware:**
 
-**If the clone fails:** Report the error clearly. Offer to retry with a different URL or token, or continue with new-user onboarding (Step 3).
+**If `CLAUDE_CODE_IS_COWORK=1` (Cowork):**
+
+Clone to a VM-local temp directory, then copy content files to the mounted folder:
+
+```bash
+TEMP_DIR="/tmp/sidekick-git-work"
+rm -rf "$TEMP_DIR"
+git clone {authenticated-url} "$TEMP_DIR"
+```
+
+If clone succeeds, copy only content files (not `.git/`) to the mounted memory path:
+
+```bash
+mkdir -p {SIDEKICK_ROOT}/memory
+cp -r "$TEMP_DIR"/* "$TEMP_DIR"/.* {SIDEKICK_ROOT}/memory/ 2>/dev/null
+rm -rf {SIDEKICK_ROOT}/memory/.git
+```
+
+If clone fails, report the error and offer to retry with a different URL or token, or continue with new-user onboarding (Step 3).
+
+**Otherwise (Claude Code):**
+
+Clone directly into the memory directory:
+
+```bash
+git clone {authenticated-url} {SIDEKICK_ROOT}/memory
+```
+
+If clone fails, report the error and offer to retry or continue with Step 3.
+
+**After successful clone:** Confirm what was pulled (`ls {SIDEKICK_ROOT}/memory/`), then continue to Step 4.
 
 ---
 
@@ -173,24 +212,44 @@ Otherwise, ask once:
 **If yes:**
 
 1. Ask for the remote URL
-2. Ask for a GitHub PAT (if not already stored in Step 2b)
+2. Ask for a GitHub PAT (if not already stored in Step 2b) — use the same inline guide from Step 2b
 3. Write safety files first (`.gitignore`, then `credentials`)
-4. Initialize the git repo in `{SIDEKICK_ROOT}/memory/`:
-   ```bash
-   cd {SIDEKICK_ROOT}/memory
-   git init
-   git add -A
-   git commit -m "sidekick: initial memory setup"
-   ```
-5. Add the remote and push:
-   ```bash
-   git remote add origin {authenticated-url}
-   git push -u origin main
-   ```
-6. Install the pre-commit hook:
-   ```bash
-   cp {SIDEKICK_ROOT}/hooks/pre-commit {SIDEKICK_ROOT}/memory/.git/hooks/pre-commit
-   ```
+
+**If `CLAUDE_CODE_IS_COWORK=1` (Cowork):**
+
+Git cannot run in the mounted folder. Initialize in a temp directory, push, then leave the content files in the mounted folder (no `.git/` dir):
+
+```bash
+TEMP_DIR="/tmp/sidekick-git-work"
+rm -rf "$TEMP_DIR"
+cp -r {SIDEKICK_ROOT}/memory "$TEMP_DIR"
+cd "$TEMP_DIR"
+git init
+git add -A
+git commit -m "sidekick: initial memory setup"
+git remote add origin {authenticated-url}
+git push -u origin main
+```
+
+**Otherwise (Claude Code):**
+
+Initialize directly:
+
+```bash
+cd {SIDEKICK_ROOT}/memory
+git init
+git add -A
+git commit -m "sidekick: initial memory setup"
+git remote add origin {authenticated-url}
+git push -u origin main
+```
+
+Install the pre-commit hook:
+
+```bash
+cp {SIDEKICK_ROOT}/hooks/pre-commit {SIDEKICK_ROOT}/memory/.git/hooks/pre-commit
+```
+
 7. Update `config.yml`: set `git_sync.enabled: true` and `git_sync.remote:` to the URL (without the PAT — just `https://github.com/user/repo`).
 
 Confirm: `Sync ready. Run /sidekick:sync to push future changes.`
