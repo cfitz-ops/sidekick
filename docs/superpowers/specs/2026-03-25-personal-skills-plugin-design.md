@@ -201,7 +201,7 @@ The shared Step 0 logic:
 6. **Propose memory saves** — if new people or projects surfaced that aren't in Sidekick memory, propose them: "I noticed 2 new people. Want me to save them?" User confirms before any writes. Writes go directly to `{sidekick_memory_path}/relationships/` or `{sidekick_memory_path}/projects/` using Sidekick's YAML frontmatter format (see Memory Write Format below).
 7. **Offer follow-up** — "Want me to prep notes for today's meetings?" → hands off to meeting-prep
 
-**Graceful degradation:** If any MCP connector is unavailable, skip all sections sourced from that connector and note what was skipped. For example, if Asana is unavailable, skip all four task sections (in-progress, due today, due this week, overdue) together. The briefing still delivers whatever's available. If `get_my_tasks` requires a workspace GID not available from the authenticated session, add `asana_workspace_gid` to config.json.
+**Graceful degradation:** If any MCP connector is unavailable, skip all sections sourced from that connector and note what was skipped. For example, if Asana is unavailable, skip all task sections (overdue, due today, due this week) together. The briefing still delivers whatever's available. If `get_my_tasks` requires a workspace GID not available from the authenticated session, add `asana_workspace_gid` to config.json.
 
 ### meeting-prep
 
