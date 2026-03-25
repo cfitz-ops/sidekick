@@ -188,7 +188,7 @@ The shared Step 0 logic:
    - Do NOT use `search_tasks_preview` — it renders a UI preview and does not return structured data suitable for reformatting.
 4. **Scan Slack (two passes):**
    - **Pass 1 — Configured channels:** for each channel ID in `config.json`, call `slack_read_channel` with `oldest` set to 12 hours ago (UTC timestamp). Filter for: direct @mentions, unanswered questions directed at user, action items from leadership channels. Resolve names against the relationships table from Step 0.
-   - **Pass 2 — Workspace-wide @mentions:** call `slack_search_public_and_private` with query `<@{slack_user_id}>` and date filter for last 12 hours. Deduplicate against Pass 1 results. Surface any mentions from channels not in the configured list.
+   - **Pass 2 — Workspace-wide @mentions:** call `slack_search_public_and_private` with query `<@{slack_user_id}>` and date filter for last 12 hours. Deduplicate against Pass 1 results. Surface any mentions from channels not in the configured list. If the mention query syntax is not supported, fall back to `slack_search_public` with the user's display name as a keyword search.
 5. **Deliver briefing** — single scannable output:
    - In-progress / focus items (from Asana)
    - Unanswered Slack questions (who asked, when, which channel)
@@ -199,7 +199,7 @@ The shared Step 0 logic:
 6. **Propose memory saves** — if new people or projects surfaced that aren't in Sidekick memory, propose them: "I noticed 2 new people. Want me to save them?" User confirms before any writes. Writes go directly to `{sidekick_memory_path}/relationships/` or `{sidekick_memory_path}/projects/` using Sidekick's YAML frontmatter format (see Memory Write Format below).
 7. **Offer follow-up** — "Want me to prep notes for today's meetings?" → hands off to meeting-prep
 
-**Graceful degradation:** If any MCP connector is unavailable, skip that section and note what was skipped. The briefing still delivers whatever's available.
+**Graceful degradation:** If any MCP connector is unavailable, skip all sections sourced from that connector and note what was skipped. For example, if Asana is unavailable, skip all four task sections (in-progress, due today, due this week, overdue) together. The briefing still delivers whatever's available. If `get_my_tasks` requires a workspace GID not available from the authenticated session, add `asana_workspace_gid` to config.json.
 
 ### meeting-prep
 
@@ -229,7 +229,7 @@ The shared Step 0 logic:
 
 When daily-brief or meeting-prep proposes saving new people or projects to Sidekick memory, the files are written directly to the configured `sidekick_memory_path` using Sidekick's standard YAML frontmatter format.
 
-**Relationship file** (`{sidekick_memory_path}/relationships/{name}.md`):
+**Relationship file** (`{sidekick_memory_path}/relationships/{name}.md`) — must match Sidekick's `templates/relationship.md`:
 
 ```yaml
 ---
@@ -240,10 +240,15 @@ modified: {YYYY-MM-DD}
 status: active
 ---
 
-{Role and context. How they relate to the user. Where they were encountered.}
+**Role:** {role or title}
+**Team:** {team or company}
+**Context:** {how they relate to the user — where encountered, working relationship}
+
+## Notes
+{additional context discovered during briefing or meeting prep}
 ```
 
-**Project file** (`{sidekick_memory_path}/projects/{slug}.md`):
+**Project file** (`{sidekick_memory_path}/projects/{slug}.md`) — must match Sidekick's `templates/project.md`:
 
 ```yaml
 ---
@@ -254,10 +259,20 @@ modified: {YYYY-MM-DD}
 status: active
 ---
 
-{What the project is. Why it matters. Key context.}
+**Goal:** {one-line goal}
+**Stack:** {key technologies, or "N/A" if unknown}
+
+## Current Status
+{what's known about the project's current state}
+
+## Next Steps
+{known next steps, or "TBD"}
 ```
 
-After writing, update `{sidekick_memory_path}/index.md` to include a pointer to the new file.
+**Updating index.md:** After writing a new memory file, update `{sidekick_memory_path}/index.md`:
+- For new relationships: add a row to the `## Key People` table: `| {Name} | {Role} | {Context} |`
+- For new projects: add a row to the `## Active Projects` table: `| {Project} | {Status} | {One-liner} |`
+- This is a single-user system — last-write-wins is acceptable. No conflict handling needed.
 
 ---
 
