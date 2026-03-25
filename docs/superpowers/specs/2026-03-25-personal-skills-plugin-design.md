@@ -114,30 +114,31 @@ corey-skills/
   "user_email": "corey@tigerdata.com",
   "user_timezone": "America/New_York",
   "slack_user_id": "UXXXXXXXXXX",
+  "slack_display_name": "Corey Fitz",
   "slack_channels": [
-    { "name": "#content-flywheel", "id": "CXXXXXXXXX1" },
-    { "name": "#marketing-leadership", "id": "CXXXXXXXXX2" },
-    { "name": "#marketing-private", "id": "CXXXXXXXXX3" },
-    { "name": "#marketing-skills-private", "id": "CXXXXXXXXX4" },
-    { "name": "#marketing", "id": "CXXXXXXXXX5" },
-    { "name": "#marketing-web", "id": "CXXXXXXXXX6" },
-    { "name": "#leads-management-team", "id": "CXXXXXXXXX7" },
-    { "name": "#leads-marketing", "id": "CXXXXXXXXX8" },
-    { "name": "#marketing-datatalks", "id": "CXXXXXXXXX9" },
-    { "name": "#marketing-abl", "id": "CXXXXXXXXXA" },
-    { "name": "external-freelance-writers", "id": "CXXXXXXXXXB" },
-    { "name": "#marketing-tools-feedback", "id": "CXXXXXXXXXC" },
-    { "name": "#sales-team", "id": "CXXXXXXXXXD" },
-    { "name": "#revops-and-marketing-ops", "id": "CXXXXXXXXXE" },
-    { "name": "#seo-geo-updates", "id": "CXXXXXXXXXF" },
-    { "name": "#marketing-shared-services", "id": "CXXXXXXXXXG" },
-    { "name": "#gtm-weekly-leads", "id": "CXXXXXXXXXH" },
-    { "name": "#discussion-one-tiger", "id": "CXXXXXXXXXI" }
+    { "name": "#content-flywheel", "id": "CXXXXXXXXX1", "leadership": false },
+    { "name": "#marketing-leadership", "id": "CXXXXXXXXX2", "leadership": true },
+    { "name": "#marketing-private", "id": "CXXXXXXXXX3", "leadership": false },
+    { "name": "#marketing-skills-private", "id": "CXXXXXXXXX4", "leadership": false },
+    { "name": "#marketing", "id": "CXXXXXXXXX5", "leadership": false },
+    { "name": "#marketing-web", "id": "CXXXXXXXXX6", "leadership": false },
+    { "name": "#leads-management-team", "id": "CXXXXXXXXX7", "leadership": true },
+    { "name": "#leads-marketing", "id": "CXXXXXXXXX8", "leadership": true },
+    { "name": "#marketing-datatalks", "id": "CXXXXXXXXX9", "leadership": false },
+    { "name": "#marketing-abl", "id": "CXXXXXXXXXA", "leadership": false },
+    { "name": "external-freelance-writers", "id": "CXXXXXXXXXB", "leadership": false },
+    { "name": "#marketing-tools-feedback", "id": "CXXXXXXXXXC", "leadership": false },
+    { "name": "#sales-team", "id": "CXXXXXXXXXD", "leadership": false },
+    { "name": "#revops-and-marketing-ops", "id": "CXXXXXXXXXE", "leadership": false },
+    { "name": "#seo-geo-updates", "id": "CXXXXXXXXXF", "leadership": false },
+    { "name": "#marketing-shared-services", "id": "CXXXXXXXXXG", "leadership": false },
+    { "name": "#gtm-weekly-leads", "id": "CXXXXXXXXXH", "leadership": false },
+    { "name": "#discussion-one-tiger", "id": "CXXXXXXXXXI", "leadership": false }
   ]
 }
 ```
 
-Channel IDs are required — the Slack MCP tools operate on IDs, not names. Names are stored alongside for human readability. Channel IDs can be found via `slack_search_channels` or from the Slack UI (channel details → bottom of the About tab).
+Channel IDs are required — the Slack MCP tools operate on IDs, not names. Names are stored alongside for human readability. The `leadership` flag marks channels where action items should be surfaced with higher priority (e.g., leadership asks, executive decisions). Channel IDs can be found via `slack_search_channels` or from the Slack UI (channel details → bottom of the About tab).
 
 This file is committed to the repo (private repo, no secrets). Credentials for external services are handled by the Cowork MCP connectors themselves.
 
@@ -152,10 +153,11 @@ Context-loader logic is **inlined into each skill as Step 0**, not invoked as a 
 The shared Step 0 logic:
 
 1. Read `config.json` from the plugin root to get `sidekick_memory_path`
-2. Read `{sidekick_memory_path}/index.md` for the high-level summary
-3. Read all files in `{sidekick_memory_path}/identity/` for full profile
-4. Read all files in `{sidekick_memory_path}/relationships/` to build a people lookup table
-5. If the memory path doesn't exist or is empty, warn the user and continue without personal context
+2. **Expand the path** — resolve `~` to the user's home directory and normalize to an absolute path before any read/write operations. All subsequent file operations use the expanded path.
+3. Read `{sidekick_memory_path}/index.md` for the high-level summary
+4. Read all files in `{sidekick_memory_path}/identity/` for full profile
+5. Read all files in `{sidekick_memory_path}/relationships/` to build a people lookup table (keyed by name and email where available)
+6. If the memory path doesn't exist or is empty, warn the user and continue without personal context
 
 ### context-loader
 
@@ -187,15 +189,15 @@ The shared Step 0 logic:
    - **Due this week** — `due_on` within the next 7 days
    - Do NOT use `search_tasks_preview` — it renders a UI preview and does not return structured data suitable for reformatting.
 4. **Scan Slack (two passes):**
-   - **Pass 1 — Configured channels:** for each channel ID in `config.json`, call `slack_read_channel` with `oldest` set to 12 hours ago (UTC timestamp). Filter for: direct @mentions, unanswered questions directed at user, action items from leadership channels. Resolve names against the relationships table from Step 0.
-   - **Pass 2 — Workspace-wide @mentions:** call `slack_search_public_and_private` with query `<@{slack_user_id}>` and date filter for last 12 hours. Deduplicate against Pass 1 results. Surface any mentions from channels not in the configured list. If the mention query syntax is not supported, fall back to `slack_search_public` with the user's display name as a keyword search.
+   - **Pass 1 — Configured channels:** for each channel ID in `config.json`, call `slack_read_channel` with `oldest` set to 12 hours ago (UTC timestamp). Filter for: direct @mentions, unanswered questions directed at user, and action items — prioritize action items from channels marked `"leadership": true` in config. Resolve names against the relationships table from Step 0.
+   - **Pass 2 — Workspace-wide @mentions:** call `slack_search_public_and_private` with query `<@{slack_user_id}>` and date filter for last 12 hours. Deduplicate against Pass 1 results. Surface any mentions from channels not in the configured list. If the mention query syntax is not supported, fall back to `slack_search_public` with `slack_display_name` from config as a keyword search.
 5. **Deliver briefing** — single scannable output:
-   - In-progress / focus items (from Asana)
+   - Overdue (Asana tasks past due date)
+   - Due today (Asana tasks due today)
    - Unanswered Slack questions (who asked, when, which channel)
+   - Leadership action items (from channels marked `"leadership": true`)
    - Today's schedule (meetings with attendee context from Sidekick)
-   - Due today (Asana tasks)
-   - Due this week
-   - Overdue
+   - Due this week (Asana tasks due within 7 days)
 6. **Propose memory saves** — if new people or projects surfaced that aren't in Sidekick memory, propose them: "I noticed 2 new people. Want me to save them?" User confirms before any writes. Writes go directly to `{sidekick_memory_path}/relationships/` or `{sidekick_memory_path}/projects/` using Sidekick's YAML frontmatter format (see Memory Write Format below).
 7. **Offer follow-up** — "Want me to prep notes for today's meetings?" → hands off to meeting-prep
 
@@ -214,14 +216,15 @@ The shared Step 0 logic:
 3. **Present meeting list** — shows each meeting with time and attendees. Asks which ones to prep (default: all)
 4. **Resolve attendees** — for each attendee in selected meetings:
    - Identify self using the `self: true` flag on the authenticated user's attendee entry (no email matching needed)
-   - Search Sidekick relationships by name and email
+   - Search Sidekick relationships by name (matching against the `name` field in frontmatter) and by email (matching against the `**Email:**` field if present)
    - If found: pull role, relationship context, recent notes
-   - If not found: call `slack_search_users` by name/email, then `slack_read_user_profile` for role, timezone, status
+   - If not found in Sidekick: call `slack_search_users` by name/email, then `slack_read_user_profile` for role, timezone, status
+   - If Slack is also unavailable: show the attendee's name and email from the calendar event with no enrichment
 5. **Enrich with project context** — if a meeting name matches a known project in Sidekick's projects space, pull that context
 6. **Deliver prep docs** — for each meeting: who's in the room, what you know about them, relevant project context, suggested talking points
 7. **Propose relationship saves** — for attendees not in Sidekick memory who seem worth remembering (recurring meeting participants, leadership, cross-functional contacts), offer to save them. User confirms. Writes use the Memory Write Format below.
 
-**Graceful degradation:** If Google Calendar is unavailable, ask the user to paste meeting details manually. Attendee resolution and context enrichment still work.
+**Graceful degradation:** If Google Calendar is unavailable, ask the user to paste meeting details manually. If Slack is unavailable, attendee resolution falls back to Sidekick-only context (no profile enrichment for unknown attendees). Attendee resolution and context enrichment still work with whatever sources are available.
 
 ---
 
@@ -229,7 +232,7 @@ The shared Step 0 logic:
 
 When daily-brief or meeting-prep proposes saving new people or projects to Sidekick memory, the files are written directly to the configured `sidekick_memory_path` using Sidekick's standard YAML frontmatter format.
 
-**Relationship file** (`{sidekick_memory_path}/relationships/{name}.md`) — must match Sidekick's `templates/relationship.md`:
+**Relationship file** (`{sidekick_memory_path}/relationships/{canonical-name}.md`) — must match Sidekick's `templates/relationship.md`:
 
 ```yaml
 ---
@@ -242,11 +245,14 @@ status: active
 
 **Role:** {role or title}
 **Team:** {team or company}
+**Email:** {email address, if known from calendar or Slack}
 **Context:** {how they relate to the user — where encountered, working relationship}
 
 ## Notes
 {additional context discovered during briefing or meeting prep}
 ```
+
+**Canonical filename rule for relationships:** lowercase the full name, replace spaces with hyphens, strip all punctuation. Examples: "Jane Smith" → `jane-smith.md`, "Jean-Luc Picard" → `jean-luc-picard.md`, "Dr. Sarah O'Brien" → `dr-sarah-obrien.md`. Before writing, check if a file already exists for this person to prevent duplicates.
 
 **Project file** (`{sidekick_memory_path}/projects/{slug}.md`) — must match Sidekick's `templates/project.md`:
 
@@ -289,6 +295,10 @@ status: active
 9. **Inlined context loading.** Each skill includes Step 0 (context-loader logic) inline rather than invoking a separate skill via slash command. This avoids relying on Claude self-invoking skills mid-execution, matching Sidekick's proven pattern.
 10. **Channel IDs in config.** Slack MCP tools require channel IDs, not names. Storing both avoids 18 resolution calls per briefing.
 11. **Calendar filtering by heuristic.** No standard calendar attribute labels "focus time" or "working location." Filtering uses summary keywords and attendee/transparency signals.
+12. **Path expansion required.** The `sidekick_memory_path` in config may use `~`. Step 0 must expand `~` to the home directory and resolve to an absolute path before any file operations.
+13. **Email in relationship schema.** Calendar attendees are identified by email. Storing email in the relationship file enables reliable attendee matching beyond name-only fuzzy matching.
+14. **Canonical filenames for relationships.** Lowercase, hyphenated, punctuation-stripped. Prevents duplicate records when the same person appears with different name formatting across sources.
+15. **Channel metadata in config.** The `leadership` flag on channels drives action item prioritization in the Slack scan, keeping channel classification explicit rather than hardcoded in skill logic.
 
 ---
 
