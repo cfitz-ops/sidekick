@@ -149,7 +149,7 @@ After collecting all answers:
 - If Q5 was answered: write `{SIDEKICK_ROOT}/memory/identity/goals.md` using `templates/goals.md`. Map the answer to "Current Priorities." Leave "Longer-Term Goals" empty.
 - If Q5 was skipped: do not create the file.
 
-Use the `templates/identity.md` format with YAML frontmatter.
+Use the `templates/identity.md` format with YAML frontmatter for profile.md, stack.md, and preferences.md. Goals uses `templates/goals.md` (as noted above).
 
 ---
 
@@ -198,7 +198,7 @@ fi
 
 Read all `.md` files in `{SIDEKICK_ROOT}/memory/` (all spaces). Generate `{SIDEKICK_ROOT}/memory/index.md` using the structure from `templates/index.md`.
 
-If `identity/goals.md` was created in Step 3, include a `## Goals` section in the generated index. Summarize current priorities in 1-3 lines. Place it between `## Preferences` and `## Quick Reference` per the canonical order in `templates/index.md`. If goals were skipped, omit the section.
+If `{SIDEKICK_ROOT}/memory/identity/goals.md` exists (whether created in Step 3, cloned in Step 2b, or migrated in Step 2), include a `## Goals` section in the generated index. Summarize current priorities in 1-3 lines. Place it between `## Preferences` and `## Quick Reference` per the canonical order in `templates/index.md`. If no goals file exists, omit the section.
 
 Keep `index.md` under 100 lines.
 
