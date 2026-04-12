@@ -62,7 +62,7 @@ When the user asks a question that maps to a frontmatter field, scan frontmatter
 - "Show me my peers" → grep for `relationship: peer`
 
 ```bash
-grep -l "relationship: {value}" ~/.claude/memory/relationships/ 2>/dev/null
+grep -rl "relationship: {value}" ~/.claude/memory/relationships/ 2>/dev/null
 ```
 
 **Default lifecycle filtering:** Relationship queries that don't specify a status exclude `status: former` and `status: archived` results. "Who reports to me?" returns `active`, `departing`, and `incoming` only. To include former or archived, the user must explicitly ask ("who used to report to me?", "show former team members"). Explicit status queries ("who's departing?") work as-is since the user specified the filter.
@@ -71,9 +71,9 @@ grep -l "relationship: {value}" ~/.claude/memory/relationships/ 2>/dev/null
 
 ## Step 4 — Check YAML frontmatter
 
-For any files not already caught by steps 2–3, scan frontmatter fields directly — `name`, `type`, `status` — for matches against the query.
+For any files not already caught by steps 2–3b, scan frontmatter fields directly — `name`, `type` — for matches against the query. Skip `relationship` and `status` fields for relationship files — Step 3b already handles those with lifecycle filtering semantics.
 
-Pay particular attention to `status: active` when the user is asking about something ongoing.
+Pay particular attention to `status: active` when the user is asking about something ongoing in non-relationship files.
 
 ---
 

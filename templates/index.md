@@ -17,6 +17,7 @@
 {top_preferences}
 
 ## Goals
+<!-- Omit this section if identity/goals.md does not exist -->
 {goals_summary}
 
 ## Quick Reference

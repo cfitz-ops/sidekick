@@ -138,6 +138,10 @@ status: active
 
 Use the appropriate template from `templates/` as a guide for content structure.
 
+**Template overrides for captures:**
+- For relationship files, use `templates/relationship.md` — includes `relationship: {value}` frontmatter, `## Interaction`, and `## Sensitive` sections.
+- For goals saves, use `templates/goals.md` (not the generic `templates/identity.md`).
+
 When updating an existing file, update the `modified` date in the frontmatter.
 
 ### When to update index.md

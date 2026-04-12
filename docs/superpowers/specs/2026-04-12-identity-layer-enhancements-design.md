@@ -54,7 +54,7 @@ relationship: {peer | reports-to-me | my-manager | collaborator | client | mento
 
 | Field | Values | Default | Purpose |
 |-------|--------|---------|---------|
-| `status` | `active`, `departing`, `incoming`, `former` | `active` | Lifecycle state. Skills can filter on this (e.g., orient deprioritizes `former`). |
+| `status` | `active`, `departing`, `incoming`, `former`, `archived` | `active` | Lifecycle state. Skills can filter on this (e.g., orient deprioritizes `former`). `archived` is set by reflect's stale file archiving — not user-set. |
 | `relationship` | `peer`, `reports-to-me`, `my-manager`, `collaborator`, `client`, `mentor`, `mentee`, `external` | None (optional) | How this person relates to the user. Enables queries like "who reports to me?" |
 
 **Body sections:**
