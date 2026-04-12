@@ -16,6 +16,9 @@
 ## Preferences
 {top_preferences}
 
+## Goals
+{goals_summary}
+
 ## Quick Reference
 - Identity details: `identity/`
 - Relationships: `relationships/`
