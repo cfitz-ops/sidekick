@@ -99,11 +99,12 @@ These rules are now active. Apply them continuously from this point forward.
 
 ### What to capture automatically
 
-- **New people:** Any person mentioned with enough context to be useful — name, role, relationship to the user, why they matter. Write to `relationships/{person-name}.md`.
+- **New people:** Any person mentioned with enough context to be useful — name, role, relationship to the user, why they matter. Write to `relationships/{person-name}.md`. When capturing, infer and set `relationship` and `status` frontmatter fields from conversation context. Default `status` to `active`. Infer `relationship` type from context (e.g., "my direct report" → `reports-to-me`) — don't ask unless ambiguous.
 - **New projects:** Any new initiative, product, or effort the user discusses substantively. Write to `projects/{project-name}.md`.
 - **Decisions:** Any choice made with reasoning — what was decided, what the alternatives were, why this option won. Write to `decisions/{decision-name}.md`.
 - **Tool or platform choices:** Any new tool adopted or rejected and why. Write to either `decisions/` (if a deliberate choice) or `identity/stack.md` (if it's now part of their standard stack).
 - **Corrections:** If the user contradicts something in memory ("actually, Alice moved to product"), update the relevant file immediately.
+- **Status changes:** If the user mentions someone is leaving, joining, or has left, update that person's `status` field (`departing`, `incoming`, `former`). This is a proactive capture — don't wait for the user to say "remember that."
 
 ### What NOT to capture
 
