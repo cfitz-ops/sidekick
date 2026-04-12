@@ -38,10 +38,15 @@ Route to exactly one space using these rules, in order:
 | A tool or platform choice and its rationale | `decisions/` | `decisions/chose-netlify.md` |
 | A process or workflow decision | `decisions/` | `decisions/weekly-review.md` |
 | Role, background, or a standing preference | `identity/` | `identity/preferences.md` |
+| Current priorities, goals, or focus areas | `identity/` | `identity/goals.md` |
 | Tribal or institutional knowledge | `knowledge/` | `knowledge/deploy-process.md` |
 | A recurring habit, working style, or approach | `patterns/` | `patterns/morning-routine.md` |
 
 When the item could fit two spaces, prefer the more specific one (e.g., a tool choice goes to `decisions/`, not `knowledge/`).
+
+**Relationship field guidance:** When routing to `relationships/`, also determine:
+- `relationship` value — infer from context (e.g., "my direct report" → `reports-to-me`, "my manager" → `my-manager`, "works on the same team" → `peer`). Don't ask unless ambiguous.
+- `status` value — default to `active`. Set `departing`, `incoming`, or `former` only when explicitly stated by the user.
 
 ---
 
@@ -81,6 +86,11 @@ Use the matching template from `templates/` as a guide for content structure:
 - `templates/decision.md` — for decisions (include context, options, decision, rationale)
 - `templates/pattern.md` — for recurring behaviors
 - `templates/knowledge.md` — for tribal/institutional knowledge
+- `templates/goals.md` — for goals and priorities (routes to `identity/goals.md`)
+
+**Template overrides:**
+- For relationship files, also include `relationship: {value}` in frontmatter. See `templates/relationship.md` for the full template including `## Interaction` and `## Sensitive` sections.
+- For goals saves, use `templates/goals.md` (not the generic `templates/identity.md`). This ensures the `## Current Priorities` / `## Longer-Term Goals` structure is consistent.
 
 Write content that is useful and specific. Avoid vague summaries — include the details that would actually help Claude understand the context later.
 
