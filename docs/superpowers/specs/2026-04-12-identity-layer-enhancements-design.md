@@ -181,7 +181,7 @@ If answered: write `{SIDEKICK_ROOT}/memory/identity/goals.md` using `templates/g
 
 If skipped: don't create the file.
 
-**Step 5 (index generation):** When generating `index.md`, include a `## Goals` section if `identity/goals.md` was created in Step 3. Summarize current priorities in 1-3 lines. If goals were skipped, omit the section.
+**Step 5 (index generation):** When generating `index.md`, include a `## Goals` section if `identity/goals.md` exists (whether created in Step 3, cloned in Step 2b, or migrated in Step 2). Summarize current priorities in 1-3 lines. If no goals file exists, omit the section.
 
 No changes to Steps 0–2b, 4, or 6.
 
