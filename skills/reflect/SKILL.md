@@ -104,6 +104,8 @@ Confirm each write with a one-liner: `Saved: {summary} → {path}`
 
 After all saves are complete, update `~/.claude/memory/index.md` if any of the saves are significant (new project, new key relationship, identity-level change). Revise only the affected sections.
 
+When refreshing `index.md`, include a `## Goals` section if `identity/goals.md` exists. Summarize current priorities in 1-3 lines. Place it between `## Preferences` and `## Quick Reference` per the canonical order in `templates/index.md`. If `identity/goals.md` does not exist, omit the section — no empty placeholder.
+
 ---
 
 ## Step 3b — Offer to push changes (if git sync enabled)
