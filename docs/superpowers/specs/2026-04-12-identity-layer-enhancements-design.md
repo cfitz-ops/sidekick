@@ -147,7 +147,7 @@ No changes to Steps 0, 0b, 1, 1.5, or 2.
 - "Who's incoming?" → grep for `status: incoming`
 - "Show me my peers" → grep for `relationship: peer`
 
-**Default lifecycle filtering:** Relationship queries that don't specify a status exclude `status: former` results. "Who reports to me?" returns `active`, `departing`, and `incoming` only. To include former: the user must explicitly ask ("who used to report to me?", "show former team members"). Explicit status queries ("who's departing?") work as-is since the user specified the filter.
+**Default lifecycle filtering:** Relationship queries that don't specify a status exclude `status: former` and `status: archived` results. "Who reports to me?" returns `active`, `departing`, and `incoming` only. To include former or archived: the user must explicitly ask ("who used to report to me?", "show former team members"). Explicit status queries ("who's departing?") work as-is since the user specified the filter.
 
 **Step 5 (return results):** When displaying relationship results, include `relationship` and `status` from frontmatter if present:
 
@@ -160,7 +160,13 @@ relationships/kyla-kurstin.md — relationship (departing)
 
 No changes to Steps 1, 2, 4, 6, or 7.
 
-### 3d. `skills/setup/SKILL.md`
+### 3d. `skills/reflect/SKILL.md`
+
+**Index refresh:** When reflect refreshes `index.md` at session end, include a `## Goals` section if `identity/goals.md` exists. Summarize current priorities in 1-3 lines. If `identity/goals.md` does not exist, omit the section — no empty placeholder.
+
+No other changes to reflect's existing behavior (conversation scanning, batch proposals, stale file archiving).
+
+### 3e. `skills/setup/SKILL.md`
 
 **Step 3 (conversational onboarding):** Add a fifth optional question:
 
@@ -192,6 +198,7 @@ No changes to Steps 0–2b or 4–6.
 | `skills/remember/SKILL.md` | Step 2 new routing entry for goals, guidance for relationship fields, Step 4 frontmatter note |
 | `skills/orient/SKILL.md` | Step 3 proactive capture for new fields + status change detection |
 | `skills/recall/SKILL.md` | New Step 3b frontmatter-aware queries with default lifecycle filtering, Step 5 display format + sensitive content guardrail |
-| `skills/setup/SKILL.md` | Step 3 optional Q5 for goals |
+| `skills/reflect/SKILL.md` | Goals-specific refresh: update `## Goals` section in `index.md` during end-of-session review when `identity/goals.md` has changed |
+| `skills/setup/SKILL.md` | Step 3 optional Q5 for goals, Step 5 index generation includes `## Goals` section when goals file exists |
 
 No other files change. No breaking changes.
