@@ -120,9 +120,14 @@ Add guidance below the table for relationship routing:
 > - `relationship` value — infer from context (e.g., "my direct report" → `reports-to-me`). Don't ask unless ambiguous.
 > - `status` value — default to `active`. Set `departing`, `incoming`, or `former` only when explicitly stated.
 
-**Step 4 (file format):** Add a note below the generic frontmatter block:
+**Step 4 (file format):** Add two notes below the generic frontmatter block:
 
 > For relationship files, also include `relationship: {value}` in frontmatter. See `templates/relationship.md` for the full template including `## Interaction` and `## Sensitive` sections.
+
+> For goals saves, use `templates/goals.md` (not the generic `templates/identity.md`). This ensures the `## Current Priorities` / `## Longer-Term Goals` structure is consistent.
+
+Update the template reference list to include:
+- `templates/goals.md` — for goals and priorities (routes to `identity/goals.md`)
 
 No changes to Steps 1, 3, 5, or 6.
 
@@ -176,7 +181,9 @@ If answered: write `{SIDEKICK_ROOT}/memory/identity/goals.md` using `templates/g
 
 If skipped: don't create the file.
 
-No changes to Steps 0–2b or 4–6.
+**Step 5 (index generation):** When generating `index.md`, include a `## Goals` section if `identity/goals.md` was created in Step 3. Summarize current priorities in 1-3 lines. If goals were skipped, omit the section.
+
+No changes to Steps 0–2b, 4, or 6.
 
 ---
 
