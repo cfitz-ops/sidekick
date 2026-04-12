@@ -133,18 +133,21 @@ If clone fails, report the error and offer to retry or continue with Step 3.
 
 ## Step 3 — Conversational onboarding (new users only)
 
-Ask these four questions one at a time. Wait for the answer to each before asking the next.
+Ask these questions one at a time. Wait for the answer to each before asking the next.
 
 1. "What's your role, and what kind of work do you do day-to-day?"
 2. "What tools and platforms do you use regularly?"
 3. "How do you prefer to work with Claude?"
 4. "Anything else Claude should always know about you?"
+5. "What are your current priorities or goals? (skip if you'd rather add these later)"
 
 After collecting all answers:
 
 - Write `{SIDEKICK_ROOT}/memory/identity/profile.md` with Q1
 - Write `{SIDEKICK_ROOT}/memory/identity/stack.md` with Q2
 - Write `{SIDEKICK_ROOT}/memory/identity/preferences.md` with Q3 + Q4
+- If Q5 was answered: write `{SIDEKICK_ROOT}/memory/identity/goals.md` using `templates/goals.md`. Map the answer to "Current Priorities." Leave "Longer-Term Goals" empty.
+- If Q5 was skipped: do not create the file.
 
 Use the `templates/identity.md` format with YAML frontmatter.
 
@@ -194,6 +197,8 @@ fi
 ## Step 5 — Generate index.md
 
 Read all `.md` files in `{SIDEKICK_ROOT}/memory/` (all spaces). Generate `{SIDEKICK_ROOT}/memory/index.md` using the structure from `templates/index.md`.
+
+If `identity/goals.md` was created in Step 3, include a `## Goals` section in the generated index. Summarize current priorities in 1-3 lines. Place it between `## Preferences` and `## Quick Reference` per the canonical order in `templates/index.md`. If goals were skipped, omit the section.
 
 Keep `index.md` under 100 lines.
 
