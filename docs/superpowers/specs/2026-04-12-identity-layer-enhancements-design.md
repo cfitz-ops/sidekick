@@ -92,7 +92,7 @@ Lives at `identity/goals.md` alongside `profile.md`, `preferences.md`, and `stac
 
 ### Index surfacing
 
-Goals must appear in `index.md` to be loaded at session start. Add a `## Goals` section after `## Identity` (or after `## Preferences`, depending on existing layout). Keep it to 1-3 lines — the hot cache summary, not the full file. Example:
+Goals must appear in `index.md` to be loaded at session start. The canonical placement is defined in `templates/index.md`: `## Goals` goes between `## Preferences` and `## Quick Reference`. All code paths that write the index (setup Step 5, remember Step 6, reflect index refresh) use this template as the source of truth for section order. Keep it to 1-3 lines — the hot cache summary, not the full file. Example:
 
 ```
 ## Goals
@@ -202,6 +202,7 @@ No changes to Steps 0–2b, 4, or 6.
 |------|--------|
 | `templates/relationship.md` | Add `relationship` frontmatter, document `status` values, add `## Interaction`, `## Sensitive` |
 | `templates/goals.md` | New file |
+| `templates/index.md` | Add `## Goals` section between `## Preferences` and `## Quick Reference` — canonical placement for all index writers |
 | `skills/remember/SKILL.md` | Step 2 new routing entry for goals, guidance for relationship fields, Step 4 frontmatter note |
 | `skills/orient/SKILL.md` | Step 3 proactive capture for new fields + status change detection |
 | `skills/recall/SKILL.md` | New Step 3b frontmatter-aware queries with default lifecycle filtering, Step 5 display format + sensitive content guardrail |
