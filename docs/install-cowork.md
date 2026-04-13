@@ -16,7 +16,7 @@ That's it. The install takes a couple of minutes, and then Sidekick will walk yo
 
 Open Cowork and follow these steps:
 
-1. Click **Customize** (gear icon in the bottom left)
+1. Click **Customize** in the left sidebar
 2. Go to **Personal Plugins**
 3. Click **Browse Plugins**
 4. Switch to the **Personal** tab
