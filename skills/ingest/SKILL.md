@@ -50,7 +50,7 @@ Scan the pasted content for durable memory candidates. Apply these rules more st
 ### Classify each candidate
 
 - **Normal:** Explicit statements of fact, confirmed decisions, clear role/status changes, or direct preference statements.
-- **Lower confidence:** Implied context, uncertain attribution, indirect signals, or things said in passing.
+- **Lower confidence:** Implied context, uncertain attribution, indirect signals, or things said in passing. Put these in a separate "Also Noticed" section the user can approve or ignore.
 - **Sensitive:** Context that relates to a specific person and would materially help future interactions, but should not be surfaced unprompted. Must map to a relationship file — `## Sensitive` sections exist only in relationship files. If a sensitive fact does not map to a relationship (e.g., a confidential project detail), skip it or propose it as a normal item in the appropriate space — do not surface it in the Sensitive tier.
 
 Valid sensitive examples: interpersonal dynamics the user should be careful with, known frustrations or preferences shared privately, organizational context that should not be surfaced unprompted.
