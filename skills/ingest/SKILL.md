@@ -115,3 +115,21 @@ Examples: `all`, `1 3`, `1-3`, `relationships + decisions`, `sensitive 6`, `all 
 ```
 
 Wait for the user's response before writing anything.
+
+---
+
+## Step 4 — Process approval
+
+Parse the user's response:
+
+- `all` — saves normal and lower-confidence items only, not sensitive
+- `all + sensitive` — saves everything including sensitive items
+- Section names (e.g., `relationships + decisions`) — saves all items in those sections. Requires explicit `sensitive` to include the sensitive section.
+- Numbered picks (`1 3`, `1-3`) — saves specific items regardless of tier
+- `sensitive {N}` — approves a specific sensitive item
+- `{N} save normally` — moves a sensitive item to the normal tier
+- `{N} save as sensitive` — moves a normal or lower-confidence item to the sensitive tier. Only valid for items that map to a relationship file. If the item does not map to a relationship file, reject the request and explain why.
+- `for #{N}, {correction}` — apply the correction to the candidate before writing
+- `skip` — saves nothing
+
+For edits, apply the correction to the candidate before writing. For reclassifications, update the candidate's tier and target section accordingly.
