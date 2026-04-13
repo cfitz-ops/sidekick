@@ -35,6 +35,10 @@ Over time, your memory fills in naturally. The more you use Claude, the more use
 
 ## What you can ask Sidekick to do
 
+### Load your context at session start
+
+Sidekick automatically runs `/sidekick:orient` when you start a session. It reads your memory and gives Claude context about who you are, your active projects, and your preferences. You don't need to do anything — this happens in the background.
+
 ### Save something to memory
 
 Say "remember that..." or use `/sidekick:remember` to explicitly save a piece of context.
