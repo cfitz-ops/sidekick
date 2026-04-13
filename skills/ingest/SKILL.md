@@ -132,7 +132,7 @@ Parse the user's response:
 - `for #{N}, {correction}` — apply the correction to the candidate before writing
 - `skip` — saves nothing
 
-For edits, apply the correction to the candidate before writing. For reclassifications, update the candidate's tier and target section accordingly.
+For edits, apply the correction to the candidate before writing. For reclassifications, update the candidate's tier and target section accordingly. If the response does not match a recognized pattern, ask the user to clarify before writing.
 
 ---
 
