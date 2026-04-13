@@ -133,3 +133,29 @@ Parse the user's response:
 - `skip` — saves nothing
 
 For edits, apply the correction to the candidate before writing. For reclassifications, update the candidate's tier and target section accordingly.
+
+---
+
+## Step 5 — Write approved items
+
+Follow `remember` Step 2–6 semantics for each approved item:
+
+- **Routing:** Use the proposed path unless the item was edited, reclassified, or clearly conflicts with `remember`'s routing rules. In those cases, `remember`'s routing rules are authoritative.
+- **Deduplication:** Check for an existing file in the target space. If found, update it and preserve the existing file structure — append or revise the relevant section rather than rewriting the whole file. If not found, create a new file using the appropriate template from `templates/`.
+- **Writing:** Use the matching template and apply template overrides such as relationship frontmatter and goals structure.
+- **Sensitive writes:** If the user approved an item as sensitive, write it only to the `## Sensitive` section of the target relationship file. Do not create sensitive sections in other memory types. Sensitive items require explicit approval — never via plain `all`.
+- **Confirmation:** Output one line per write: `Saved: {summary} → {path}`
+- **Index updates:** Update `index.md` only when the save is significant under `remember` Step 6 rules (new project, new key relationship, identity-level change).
+
+After all writes, output: `Ingested: {N} items saved from call with {attendees}.`
+
+`ingest` does not:
+- Store the raw transcript
+- Create new memory spaces or new template types
+- Change `remember`'s routing or write rules
+
+---
+
+## Step 6 — Done
+
+Do not store the raw transcript. If the user wants to process another call, they invoke the skill again.
