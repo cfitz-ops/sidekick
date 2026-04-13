@@ -67,3 +67,51 @@ Valid sensitive examples: interpersonal dynamics the user should be careful with
 ### Reconcile against existing memory
 
 For each candidate, check existing memory files in the target space to determine whether this is a new entry or an update to an existing file. Read likely matching files when relevant — not just the index. Label each candidate as "new" or "update" and assign a target path.
+
+---
+
+## Step 3 — Present proposal
+
+Display the categorized proposal grouped by memory space. Show only populated sections — omit empty categories. If no candidates qualify, say: "Nothing worth saving from this call." and stop.
+
+All sections that may appear: Relationships, Projects, Decisions, Identity, Patterns, Knowledge, Also Noticed, Sensitive. The `---` dividers appear before Also Noticed and before Sensitive to visually separate the tiers. The attendees line is included only if attendees were provided or inferred.
+
+Use this format:
+
+```
+Extracted from pasted call content with {attendees}:
+
+## Relationships
+1. Alex Chen — new → relationships/alex-chen.md
+   Senior engineer on the platform team, working with you on the data pipeline migration.
+2. Kyla Kurstin — update → relationships/kyla-kurstin.md
+   Wrapping up the design system handoff before her last day.
+
+## Projects
+3. Data pipeline migration — new → projects/data-pipeline-migration.md
+   Moving from batch ETL to streaming; Alex owns the backend, you own stakeholder communication.
+
+## Decisions
+4. Chose Kafka over RabbitMQ — new → decisions/chose-kafka.md
+   Selected for throughput at scale; RabbitMQ was simpler but could not handle projected volume.
+
+---
+
+## Also Noticed
+5. Alex Chen — possible update → relationships/alex-chen.md
+   May be moving to the infrastructure team; mentioned in passing and not confirmed.
+
+---
+
+## Sensitive
+6. Kyla Kurstin — sensitive update → relationships/kyla-kurstin.md
+   Frustrated with the transition timeline and prefers not to discuss it publicly.
+   Would be stored in `## Sensitive` and not surfaced by recall unless explicitly asked.
+
+---
+
+Save all, pick by number, approve by section, approve sensitive separately, or skip.
+Examples: `all`, `1 3`, `1-3`, `relationships + decisions`, `sensitive 6`, `all + sensitive`, `skip`
+```
+
+Wait for the user's response before writing anything.
