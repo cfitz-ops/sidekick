@@ -10,7 +10,7 @@ Sidekick stores what it learns about you as plain markdown files, organized into
 
 | Space | What goes here | Example |
 |-------|---------------|---------|
-| **Identity** | Who you are, your role, preferences | "I'm a marketing manager who prefers concise responses" |
+| **Identity** | Who you are, your role, preferences, goals | "I'm a marketing manager who prefers concise responses" |
 | **Relationships** | People you work with, teams, collaborators | "Jordan is my tech lead, started in January" |
 | **Projects** | What you're working on, active and past | "Website redesign — launching Q2, using Contentful" |
 | **Decisions** | Key choices and the reasoning behind them | "Went with Postgres over MySQL because of JSON support" |
