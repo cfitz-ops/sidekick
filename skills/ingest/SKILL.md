@@ -34,6 +34,7 @@ Scan the pasted content for durable memory candidates. Apply these rules more st
 - **People context:** role, team, relationship to the user, and factual status changes such as joining, leaving, or moving teams. Factual status changes are normal candidates — they update the `status` frontmatter field in relationship files. Interpersonal context around those changes (frustration, private concerns, dynamics the person would not want surfaced) belongs in the sensitive tier instead.
 - **Project updates:** durable status shifts, meaningful blockers, timeline changes, scope decisions, or ownership changes. Skip routine standup noise.
 - **Decisions:** choices made with rationale, especially when alternatives were discussed.
+- **Identity context:** role changes, background, or standing preferences that define who the user is across projects and conversations. Routes to `identity/`.
 - **Preferences and patterns:** working style or communication preferences revealed clearly in conversation.
 - **Knowledge:** institutional or tribal knowledge shared verbally that is not already in Sidekick memory.
 
@@ -147,7 +148,7 @@ Follow `remember` Step 2–6 semantics for each approved item:
 - **Confirmation:** Output one line per write: `Saved: {summary} → {path}`
 - **Index updates:** Update `index.md` only when the save is significant under `remember` Step 6 rules (new project, new key relationship, identity-level change).
 
-After all writes, output: `Ingested: {N} items saved from call with {attendees}.`
+After all writes, output: `Ingested: {N} items saved from call with {attendees}.` Omit the attendees clause if attendees are unknown.
 
 `ingest` does not:
 - Store the raw transcript
