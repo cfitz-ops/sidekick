@@ -1,92 +1,59 @@
 # Sidekick
 
-Sidekick is a Claude plugin that builds and maintains personal context across conversations. It stores memory as plain markdown in a `.sidekick/` directory, organized into six named spaces, so Claude always knows who you are and what you're working on — without you having to re-explain it every session.
+**Sidekick gives Claude a memory that persists across conversations.**
 
-Works in both **Claude Code** and **Cowork** — see [Platform Notes](#platform-notes) below.
+Every time you start a new session, Claude starts from scratch — it doesn't remember who you are, what you're working on, or how you like to work. Sidekick fixes that. It saves context as plain markdown files so Claude always has your history, preferences, and ongoing work at hand.
 
----
-
-## Quick Start
-
-1. Install the plugin
-2. Run `/sidekick:setup` to onboard and migrate any existing memory
-
-That's it. Sidekick will auto-load your context at the start of each session.
+Built for anyone who uses Claude regularly and wants it to know them over time.
 
 ---
 
-## Skills
+## Get started
 
-| Skill | Trigger | What it does |
-|-------|---------|--------------|
-| `/sidekick:setup` | First install, "get started" | Onboarding and migration |
-| `/sidekick:orient` | Auto on session start | Loads your context |
-| `/sidekick:remember` | "Remember that...", explicit | Saves context to memory |
-| `/sidekick:reflect` | Session end, "let's wrap up" | Reviews session, proposes saves |
-| `/sidekick:recall` | "What do I know about..." | Searches memory |
-| `/sidekick:status` | "Memory status" | Shows memory dashboard |
-| `/sidekick:sync` | Explicit | Cross-device git sync |
+Choose your platform:
+
+- **Using Claude Code?** → [Install guide for Claude Code](docs/install-claude-code.md)
+- **Using Cowork (Claude Desktop)?** → [Install guide for Cowork](docs/install-cowork.md)
 
 ---
 
-## Memory Structure
+## What Sidekick can do
 
-Sidekick stores everything in a `.sidekick/` directory:
+| Action | How | What happens |
+|--------|-----|-------------|
+| Save something to memory | "Remember that..." | Sidekick saves it to the right memory space and confirms |
+| Search your memory | "What do I know about...?" | Sidekick searches across everything it's stored |
+| Check your memory | `/sidekick:status` | See a dashboard of what's in each memory space |
+| Review a session | `/sidekick:reflect` | Review the conversation for anything worth saving |
+| Sync across devices | `/sidekick:sync` | Push/pull memory to a private GitHub repo |
 
-- **Claude Code:** `~/.claude/.sidekick/`
-- **Cowork:** `{your-selected-folder}/.sidekick/`
+Most of the time you don't need to do anything — Sidekick captures context automatically from your conversations. See the [Usage Guide](docs/usage-guide.md) for the full details.
+
+---
+
+## How memory is organized
+
+Sidekick stores everything as markdown files in six spaces:
 
 ```
-.sidekick/
-├── config.yml          # Settings (git remote, sync preferences)
-├── credentials         # GitHub PAT (gitignored)
-├── .gitignore          # Credential safety
-├── hooks/pre-commit    # Blocks accidental PAT commits
-└── memory/
-    ├── index.md        # Hot cache summary
-    ├── identity/       # Who you are, roles, preferences
-    ├── relationships/  # People, teams, collaborators
-    ├── projects/       # Active and past projects
-    ├── decisions/      # Key choices and rationale
-    ├── patterns/       # Habits, workflows
-    └── knowledge/      # Facts, references, domain notes
+.sidekick/memory/
+├── index.md        # Quick summary of everything
+├── identity/       # Who you are, your role, preferences
+├── relationships/  # People you work with
+├── projects/       # What you're working on
+├── decisions/      # Key choices and rationale
+├── patterns/       # Your habits and workflows
+└── knowledge/      # Facts, references, domain notes
 ```
 
-An `index.md` hot cache gives Claude a fast summary without loading every file.
+These are your files — you can read, edit, or delete them anytime. Nothing is hidden or locked away.
 
 ---
 
-## Platform Notes
+## Advanced
 
-### Claude Code
-
-Fully supported. SessionStart/Stop hooks auto-load context and prompt session reflection.
-
-### Cowork
-
-**Setup:**
-1. Install the plugin in Cowork
-2. Run `/sidekick:setup` — you'll be prompted to select a folder
-3. If you have an existing memory repo, provide the URL and a GitHub PAT during setup
-
-**What works:**
-- All skills
-- Memory persistence via your selected folder
-- Git sync with stored credentials (no re-entering PAT each session)
-- Auto-pull on session start (configurable in `.sidekick/config.yml`)
-
-**Differences from Claude Code:**
-- **Folder selection required** — memory lives in your selected folder at `.sidekick/`
-- **PAT-based auth** — SSH and interactive credentials are not available in the Cowork VM
-- **No auto-reflect** — Run `/sidekick:reflect` before ending a session
-
-**Credential safety:** Your GitHub PAT is stored locally in `.sidekick/credentials`, which is gitignored. A pre-commit hook blocks accidental commits containing tokens.
-
----
-
-## Cross-Device Sync
-
-Opt in during `/sidekick:setup`. Sidekick can back up and sync your memory directory via git, so your context follows you across machines. Run `/sidekick:sync` at any time to push or pull.
+- **Cross-device sync** — Back up and sync your memory across machines via a private GitHub repo. See the sync section in your platform's install guide.
+- **Contributing** — Sidekick is open source under the MIT license. Issues and PRs welcome.
 
 ---
 
